@@ -2,252 +2,455 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Closers PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Closers PRO</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-body {
-  margin: 0;
-  background: #0f172a;
-  color: white;
-  font-family: sans-serif;
-  display: flex;
-  height: 100vh;
-}
+    :root {
+        --bg-dark: #0f172a;
+        --surface: #1e293b;
+        --surface-glass: rgba(30, 41, 59, 0.7);
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --danger: #ef4444;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.1);
+    }
 
-/* IZQUIERDA */
-.chat {
-  width: 25%;
-  background: #020617;
-  padding: 15px;
-  overflow: hidden;
-}
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-#chatContent {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: transform 0.4s;
-}
+    body {
+        background: var(--bg-dark);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-.msg { opacity: 0.5; }
-.msg.active { opacity: 1; font-weight: bold; }
+    /* HEADER */
+    .header {
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: transparent;
+        z-index: 10;
+    }
 
-/* CENTRO */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+    .header-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-.avatar {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-}
+    .header-title i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
 
-.avatar img, .avatar video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+    .status-badge {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+    }
 
-/* ESTADO */
-.status {
-  margin-top: 10px;
-  font-size: 14px;
-  opacity: 0.7;
-}
+    .status-badge.listening {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+    }
 
-/* DERECHA */
-.audit {
-  width: 25%;
-  background: #020617;
-  padding: 15px;
-  overflow-y: auto;
-}
+    /* MAIN STAGE (SIMULACIÓN) */
+    .stage {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        position: relative;
+    }
 
-/* BOTONES */
-.controls {
-  position: absolute;
-  bottom: 20px;
-}
+    .video-card {
+        width: 100%;
+        max-width: 800px;
+        height: 60vh;
+        background: var(--surface);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
 
-button {
-  padding: 10px;
-  margin: 5px;
-  cursor: pointer;
-}
+    /* AVATAR */
+    .avatar-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar {
+        width: 160px;
+        height: 160px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        border: 4px solid var(--surface);
+        transition: all 0.3s ease;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* EFECTO RETROILUMINADO (GLOW) AL HABLAR */
+    .talking .avatar {
+        /* alternate hace que el brillo suba y baje suavemente */
+        animation: neon-pulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes neon-pulse {
+        0% {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3),
+                        0 0 20px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
+                        0 0 40px rgba(59, 130, 246, 0.5),
+                        0 0 60px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.9);
+        }
+    }
+
+    
+    /* SUBTÍTULOS */
+    .subtitles-container {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        max-width: 600px;
+        text-align: center;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .subtitles {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 14px 24px;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        display: inline-block;
+        border: 1px solid rgba(255,255,255,0.05);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .subtitles.visible {
+        opacity: 1;
+    }
+
+    /* DOCK DE CONTROLES (Estilo Videollamada) */
+    .controls-dock {
+        padding: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        background: transparent;
+        padding-bottom: 40px;
+    }
+
+    .btn-control {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--surface-glass);
+        backdrop-filter: blur(10px);
+        color: var(--text-main);
+        font-size: 1.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .btn-control:hover {
+        background: var(--surface);
+        transform: translateY(-2px);
+    }
+
+    .btn-control .tooltip {
+        position: absolute;
+        top: -40px;
+        background: var(--surface);
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+        border: 1px solid var(--border);
+    }
+
+    .btn-control:hover .tooltip {
+        opacity: 1;
+    }
+
+    /* Botón de hablar principal */
+    .btn-talk {
+        background: var(--primary);
+        border: none;
+        width: 64px;
+        height: 64px;
+        font-size: 1.8rem;
+    }
+
+    .btn-talk:hover {
+        background: var(--primary-hover);
+    }
+
+    .btn-talk.recording {
+        background: var(--danger);
+        animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
 </style>
 </head>
 
 <body>
 
-<!-- IZQUIERDA -->
-<div class="chat">
-  <div id="chatContent"></div>
-</div>
+<header class="header">
+    <div class="header-title">
+        <i class="ph-fill ph-target"></i> Closers PRO
+    </div>
+    <div id="statusBadge" class="status-badge">
+        <i class="ph-fill ph-check-circle"></i> Listo para iniciar
+    </div>
+</header>
 
-<!-- CENTRO -->
-<div class="main">
+<main class="stage">
+    <div class="video-card">
+        <div id="avatarWrapper" class="avatar-wrapper">
+            <div class="speaking-ring"></div>
+            <div class="avatar">
+                <img id="avatarImg" alt="Avatar del prospecto">
+            </div>
+        </div>
+        
+        <div class="lead-info">
+            <i class="ph-fill ph-user-circle"></i> Lead LATAM
+        </div>
+    </div>
 
-  <div class="avatar">
-    <img id="avatarImg">
-    <video id="avatarVideo" autoplay muted playsinline style="display:none;"></video>
-  </div>
+    <div class="subtitles-container">
+        <div id="subtitles" class="subtitles"></div>
+    </div>
+</main>
 
-  <div id="status" class="status">Listo</div>
+<footer class="controls-dock">
+    <button class="btn-control" onclick="resetChat()">
+        <i class="ph ph-arrow-counter-clockwise"></i>
+        <span class="tooltip">Reiniciar Sala</span>
+    </button>
 
-  <div class="controls">
-    <button onclick="start()">▶ Start</button>
-    <button onclick="reset()">🔄 Reset</button>
-    <button onclick="audit()">📊 Audit</button>
-    <button onclick="talk()">🎤 Hablar</button>
-  </div>
-</div>
+    <button id="talkBtn" class="btn-control btn-talk">
+        <i id="micIcon" class="ph-fill ph-microphone"></i>
+        <span class="tooltip">Hablar</span>
+    </button>
 
-<!-- DERECHA -->
-<div class="audit">
-  <h3>Auditoría</h3>
-  <div id="auditBox">Sin análisis</div>
-</div>
+    <button class="btn-control" onclick="pausarLead()">
+        <i class="ph ph-pause"></i>
+        <span class="tooltip">Pausar Lead</span>
+    </button>
+
+    <button class="btn-control" onclick="auditar()">
+        <i class="ph ph-chart-line-up"></i>
+        <span class="tooltip">Ver Auditoría</span>
+    </button>
+</footer>
 
 <script>
-const chatContent = document.getElementById("chatContent");
-const auditBox = document.getElementById("auditBox");
-const avatarImg = document.getElementById("avatarImg");
-const avatarVideo = document.getElementById("avatarVideo");
-const status = document.getElementById("status");
+    const talkBtn = document.getElementById("talkBtn");
+    const micIcon = document.getElementById("micIcon");
+    const statusBadge = document.getElementById("statusBadge");
+    const subtitles = document.getElementById("subtitles");
+    const avatarWrapper = document.getElementById("avatarWrapper");
+    const avatarImg = document.getElementById("avatarImg");
 
-// 🎭 avatar base
-avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
+    // 🎭 Avatar más humano/ilustrativo (Colección 'notionists')
+    function randomAvatar() {
+        const seed = Math.floor(Math.random() * 9999);
+        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=e2e8f0`;
+    }
+    randomAvatar();
 
-// 🧾 MENSAJES
-function addMsg(text) {
-  const div = document.createElement("div");
-  div.className = "msg active";
-  div.innerText = text;
+    // 🎤 Speech Recognition
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Recognition();
+    rec.lang = "es-AR";
 
-  document.querySelectorAll(".msg").forEach(m => m.classList.remove("active"));
+    talkBtn.onclick = () => {
+        try {
+            rec.start();
+            // UI Update: Grabando
+            talkBtn.classList.add("recording");
+            micIcon.classList.replace("ph-microphone", "ph-stop");
+            updateStatus("Escuchando...", "listening", "ph-microphone-stage");
+        } catch (e) {
+            console.log("El micrófono ya está activo o bloqueado.");
+        }
+    };
 
-  chatContent.appendChild(div);
-
-  const total = chatContent.children.length;
-  if (total > 6) {
-    chatContent.style.transform = `translateY(-${(total-6)*30}px)`;
-  }
-}
-
-// 🎤 speech recognition
-const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-rec.lang = "es-AR";
-
-function talk() {
-  try {
-    rec.start();
-    status.innerText = "Escuchando...";
-  } catch {
-    console.log("Mic ya activo");
-  }
-}
-
-rec.onresult = async (e) => {
-  const text = e.results[0][0].transcript;
-
-  addMsg("Tú: " + text);
-  status.innerText = "Procesando...";
-
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ message: text })
-    });
-
-    const data = await res.json();
-
-    const respuesta = data.reply || "Sin respuesta";
-    addMsg("Lead: " + respuesta);
-
-    // 🔊 VOZ
-    hablar(respuesta);
-
-    // 🎬 VIDEO HEYGEN
-    if (data.video) {
-      avatarImg.style.display = "none";
-      avatarVideo.style.display = "block";
-      avatarVideo.src = data.video;
-      avatarVideo.play();
-    } else {
-      avatarVideo.style.display = "none";
-      avatarImg.style.display = "block";
+    rec.onend = () => {
+        talkBtn.classList.remove("recording");
+        micIcon.classList.replace("ph-stop", "ph-microphone");
     }
 
-    status.innerText = "Tu turno";
+    rec.onresult = async (event) => {
+        const text = event.results[0][0].transcript;
 
-  } catch (err) {
-    console.error(err);
-    status.innerText = "Error";
-    addMsg("Error de conexión");
-  }
-};
+        mostrarSubtitulo("Tú: " + text);
+        updateStatus("Escribiendo...", "", "ph-dots-three");
 
-// 🔊 VOZ NATURAL
-function hablar(texto) {
-  const u = new SpeechSynthesisUtterance(texto);
-  u.lang = "es-ES";
-  u.rate = 0.95;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: text })
+            });
 
-// ▶ START
-async function start() {
-  const res = await fetch("/api/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({message:"/start"})
-  });
+            const data = await res.json();
+            const respuesta = data.reply || "No obtuve respuesta.";
 
-  const data = await res.json();
-  addMsg(data.reply);
-}
+            mostrarSubtitulo("Lead: " + respuesta);
+            hablar(respuesta);
+        } catch (error) {
+            mostrarSubtitulo("Error de conexión con el simulador.");
+            updateStatus("Error", "", "ph-warning-circle");
+        }
+    };
 
-// 🔄 RESET
-async function reset() {
-  await fetch("/api/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({message:"/reset"})
-  });
+    // 🎬 SUBTÍTULOS Y ESTADO
+    let subtitleTimeout;
+    function mostrarSubtitulo(text) {
+        subtitles.innerText = text;
+        subtitles.classList.add("visible");
+        
+        clearTimeout(subtitleTimeout);
+        subtitleTimeout = setTimeout(() => {
+            subtitles.classList.remove("visible");
+        }, 8000); // Ocultar después de 8 segundos
+    }
 
-  chatContent.innerHTML = "";
-  auditBox.innerText = "Sin análisis";
+    function updateStatus(text, modeClass = "", iconClass = "ph-info") {
+        statusBadge.className = `status-badge ${modeClass}`;
+        statusBadge.innerHTML = `<i class="ph-fill ${iconClass}"></i> ${text}`;
+    }
 
-  avatarVideo.style.display = "none";
-  avatarImg.style.display = "block";
+    // 🔊 VOZ + ANIMACIÓN SUTIL
+    function hablar(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "es-ES"; 
 
-  status.innerText = "Reiniciado";
-}
+        avatarWrapper.classList.add("talking");
+        updateStatus("Lead respondiendo...", "", "ph-speaker-high");
 
-// 📊 AUDIT
-async function audit() {
-  status.innerText = "Analizando...";
+        utterance.onend = () => {
+            avatarWrapper.classList.remove("talking");
+            updateStatus("Tu turno", "", "ph-check-circle");
+        };
 
-  const res = await fetch("/api/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({message:"/audit"})
-  });
+        speechSynthesis.speak(utterance);
+    }
 
-  const data = await res.json();
+    // ⏸️
+    function pausarLead() {
+        speechSynthesis.cancel();
+        avatarWrapper.classList.remove("talking");
+        updateStatus("Simulación pausada", "", "ph-pause-circle");
+    }
 
-  auditBox.innerText = data.audit || "Sin datos";
-  status.innerText = "Listo";
-}
+    // 🔄 RESET
+    async function resetChat() {
+        updateStatus("Reiniciando...", "", "ph-arrows-clockwise");
+        try {
+            await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: "/reset" })
+            });
+            mostrarSubtitulo("Simulación reiniciada.");
+            randomAvatar();
+            updateStatus("Listo para iniciar", "", "ph-check-circle");
+        } catch (e) {
+            mostrarSubtitulo("Simulación reiniciada (Local).");
+            randomAvatar();
+            updateStatus("Listo para iniciar", "", "ph-check-circle");
+        }
+    }
+
+    // 📊 AUDIT
+    async function auditar() {
+        updateStatus("Generando auditoría...", "", "ph-chart-line-up");
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: "/audit" })
+            });
+            const data = await res.json();
+            mostrarSubtitulo(data.reply || "Revisa la consola para el reporte.");
+            updateStatus("Auditoría completa", "", "ph-check-circle");
+        } catch (e) {
+            mostrarSubtitulo("Error al cargar la auditoría.");
+            updateStatus("Error", "", "ph-warning-circle");
+        }
+    }
 </script>
 
 </body>
