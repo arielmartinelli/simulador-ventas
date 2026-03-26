@@ -160,8 +160,9 @@ let speaking = false;
 
 // 🎲 Avatar random
 function randomAvatar() {
-    const seed = Math.floor(Math.random() * 99999);
-    avatarImg.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+    const gender = Math.random() > 0.5 ? "men" : "women";
+    const id = Math.floor(Math.random() * 99); // 0–99
+    avatarImg.src = `https://randomuser.me/api/portraits/${gender}/${id}.jpg`;
 }
 randomAvatar();
 
