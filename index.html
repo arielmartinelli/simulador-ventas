@@ -182,7 +182,7 @@ rec.onresult = async (event) => {
     mostrarSubtitulo("Tú: " + text);
     status.innerText = "Procesando...";
 
-    const res = await fetch("/chat", {
+    const res = await fetch("/api/chat", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ message: text })
@@ -255,7 +255,7 @@ function pausarLead() {
 
 // 🔄 RESET
 async function resetChat() {
-    await fetch("/chat", {
+    await fetch("/api/chat", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ message: "/reset" })
@@ -269,7 +269,7 @@ async function resetChat() {
 async function auditar() {
     status.innerText = "Analizando...";
 
-    const res = await fetch("/chat", {
+    const res = await fetch("/api/chat", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ message: "/audit" })
