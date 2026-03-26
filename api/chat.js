@@ -6,26 +6,26 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { message } = req.body;
+
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const { message } = req.body;
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "Sos un vendedor experto." },
+        { role: "system", content: "Sos un closer experto." },
         { role: "user", content: message }
       ],
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       reply: completion.choices[0].message.content,
     });
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error del servidor" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
   }
 }
