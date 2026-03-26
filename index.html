@@ -279,6 +279,21 @@ async function auditar() {
     mostrarSubtitulo(data.text);
     status.innerText = "Auditoría lista";
 }
+
+async function enviarMensaje() {
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: "Hola, quiero vender un producto"
+    }),
+  });
+
+  const data = await res.json();
+  console.log(data.reply);
+}
 </script>
 
 </body>
