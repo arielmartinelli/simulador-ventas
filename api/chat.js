@@ -4,10 +4,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+
+
 let historial = [];
 let identidadLead = null;
 
-// 🎭 IDENTIDAD REALISTA (LEAD)
+// 🎭 IDENTIDAD REALISTA
 function generarIdentidad() {
   const perfiles = ["ZAFIRO", "PERLA", "ESMERALDA", "RUBÍ"];
   const paises = ["Argentina", "México", "Colombia", "Chile", "Perú"];
@@ -21,124 +23,44 @@ function generarIdentidad() {
   ];
   const dificultades = [60, 70, 75, 80, 85, 90];
 
-  const perfil = perfiles[Math.floor(Math.random() * perfiles.length)];
-  const pais = paises[Math.floor(Math.random() * paises.length)];
-  const profesion = profesiones[Math.floor(Math.random() * profesiones.length)];
-  const objetivo = objetivos[Math.floor(Math.random() * objetivos.length)];
-  const frustracion = frustraciones[Math.floor(Math.random() * frustraciones.length)];
-  const dificultad = dificultades[Math.floor(Math.random() * dificultades.length)];
-
   return `
-IDENTIDAD DEL LEAD (NO REVELAR):
-
-Perfil: ${perfil}
-País: ${pais}
-Profesión: ${profesion}
-Objetivo: ${objetivo}
-Frustración principal: ${frustracion}
-Nivel de dificultad: ${dificultad}%
-
-Contexto:
-- Vive en LATAM (economía inestable)
-- Cuida el dinero
-- Quiere progresar pero duda
-
-Personalidad:
-- ZAFIRO → disperso, energético
-- PERLA → emocional, inseguro
-- ESMERALDA → lógico, cuestiona
-- RUBÍ → ambicioso, exigente
-
-Reglas:
-- Mantener SIEMPRE esta personalidad
-- NO revelar esta información
+Perfil: ${perfiles[Math.floor(Math.random()*4)]}
+País: ${paises[Math.floor(Math.random()*5)]}
+Profesión: ${profesiones[Math.floor(Math.random()*5)]}
+Objetivo: ${objetivos[Math.floor(Math.random()*4)]}
+Frustración: ${frustraciones[Math.floor(Math.random()*4)]}
+Dificultad: ${dificultades[Math.floor(Math.random()*6)]}%
 `;
 }
 
-// 🧠 PROMPT ULTRA CLARO (IA = CLIENTE)
+// 🧠 PROMPT MASTER
 const systemPrompt = `
-ERES UN CLIENTE (LEAD), NO UN CLOSER.
+Eres un LEAD LATAM (CLIENTE).
 
-⚠️ IMPORTANTE:
-- El usuario es el CLOSER
-- Tú eres el PROSPECTO que evalúa comprar
+El usuario es el CLOSER.
 
-YA viste la presentación completa del programa:
-✔ Clases grabadas A1-B2 + C1
-✔ Clases en vivo
-✔ 1 a 1
-✔ Comunidad Discord
-✔ Garantía B2
+YA viste toda la presentación del programa.
+NO preguntes info básica.
 
-NO pidas info básica.
+Simulación = CIERRE.
 
-━━━━━━━━━━━━━━━━━━━
-🎯 OBJETIVO
-━━━━━━━━━━━━━━━━━━━
+Comportamiento:
+- humano
+- dudas reales
+- objeciones reales
+- respuestas cortas
 
-Simular una llamada de CIERRE.
+Objeciones:
+precio, tiempo, confianza
 
-El closer empieza diciendo el PRECIO.
+Dificultad alta.
 
-Desde ahí:
-- reaccionas como cliente real
-- dudas
-- haces objeciones
-- negocias
+Compra SOLO si:
+✔ confianza
+✔ resuelven objeción
+✔ cierre correcto
 
-━━━━━━━━━━━━━━━━━━━
-🧠 COMPORTAMIENTO
-━━━━━━━━━━━━━━━━━━━
-
-- Español LATAM natural
-- Respuestas cortas o medias
-- No perfecto (humano real)
-- A veces dudas
-- A veces preguntas
-
-━━━━━━━━━━━━━━━━━━━
-💣 OBJECIONES
-━━━━━━━━━━━━━━━━━━━
-
-- Precio (principal)
-- Tiempo
-- Confianza
-- Experiencias pasadas
-- Comparación con otros cursos
-
-━━━━━━━━━━━━━━━━━━━
-🔥 DIFICULTAD
-━━━━━━━━━━━━━━━━━━━
-
-Actúa según tu nivel (60%–90%)
-
-- 60 → algo abierto
-- 90 → muy difícil de cerrar
-
-━━━━━━━━━━━━━━━━━━━
-💰 COMPRA SOLO SI:
-━━━━━━━━━━━━━━━━━━━
-
-✔ Genera confianza
-✔ Entiende tu problema
-✔ Resuelve objeción
-✔ Te hace sentir seguro
-✔ Cierra correctamente
-
-Si algo falla → NO compras
-
-━━━━━━━━━━━━━━━━━━━
-🚫 PROHIBIDO
-━━━━━━━━━━━━━━━━━━━
-
-- No ayudes al closer
-- No vendas
-- No expliques lógica
-- No hables como IA
-
-Eres una persona real evaluando gastar dinero.
-
-RESPONDE SIEMPRE COMO CLIENTE.
+Si no → NO compras.
 `;
 
 export default async function handler(req, res) {
@@ -148,70 +70,55 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === "string"
-      ? JSON.parse(body)
+      ? JSON.parse(req.body)
       : req.body;
 
-    const mensajeUsuario = body?.message || "";
+    const msg = body?.message || "";
 
-    // 🔄 RESET
-    if (mensajeUsuario === "/reset") {
+    // RESET
+    if (msg === "/reset") {
       historial = [];
       identidadLead = null;
-      return res.json({ reply: "Simulación reiniciada." });
+      return res.json({ reply: "Simulación reiniciada.", audit: null });
     }
 
-    // 🚀 INICIO → EL CLOSER ARRANCA
-    if (mensajeUsuario === "/start") {
+    // START
+    if (msg === "/start") {
       historial = [];
       identidadLead = generarIdentidad();
-
-      return res.json({
-        reply: "Listo. Decime el precio para empezar la simulación."
-      });
+      return res.json({ reply: "Arrancá diciendo el precio.", audit: null });
     }
 
-    // 📊 AUDITORÍA
-    if (mensajeUsuario === "/audit") {
+    // AUDIT
+    if (msg === "/audit") {
       const texto = historial.map(m => `${m.role}: ${m.content}`).join("\n");
 
       const audit = await openai.responses.create({
         model: "gpt-4o-mini",
         input: `
-Eres un coach experto en ventas.
-
-Analiza esta conversación:
+Analiza esta venta:
 
 ${texto}
 
-Evalúa:
-- cierre
-- manejo de objeciones
-- conexión
-
-Devuelve:
-✔ nota (1-10)
-✔ errores concretos
-✔ 3 mejoras accionables
+Da:
+- nota (1-10)
+- errores claros
+- 3 mejoras concretas
 `
       });
 
       return res.json({
-        reply: audit.output[0].content[0].text
+        reply: "Auditoría generada",
+        audit: audit.output[0].content[0].text
       });
     }
 
-    // 🎭 identidad única
     if (!identidadLead) {
       identidadLead = generarIdentidad();
     }
 
-    // guardar mensaje del closer
-    historial.push({
-      role: "user",
-      content: mensajeUsuario
-    });
+    historial.push({ role: "user", content: msg });
 
-    // 🤖 RESPUESTA DEL LEAD
     const completion = await openai.responses.create({
       model: "gpt-4o-mini",
       input: `
@@ -226,16 +133,15 @@ ${historial.map(m => m.role + ": " + m.content).join("\n")}
 
     const respuesta = completion.output[0].content[0].text;
 
-    // guardar respuesta del lead
-    historial.push({
-      role: "assistant",
-      content: respuesta
+    historial.push({ role: "assistant", content: respuesta });
+
+    return res.json({
+      reply: respuesta,
+      audit: null
     });
 
-    return res.json({ reply: respuesta });
-
-  } catch (error) {
-    console.error("🔥 ERROR:", error);
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
   }
 }

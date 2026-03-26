@@ -1,457 +1,231 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador Closers PRO</title>
+import OpenAI from "openai";
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-<style>
-    :root {
-        --bg-dark: #0f172a;
-        --surface: #1e293b;
-        --surface-glass: rgba(30, 41, 59, 0.7);
-        --primary: #3b82f6;
-        --primary-hover: #2563eb;
-        --danger: #ef4444;
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --border: rgba(255, 255, 255, 0.1);
-    }
+let historial = [];
+let identidadLead = null;
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+// 🎭 IDENTIDAD REALISTA
+function generarIdentidad() {
+  const perfiles = ["ZAFIRO", "PERLA", "ESMERALDA", "RUBÍ"];
+  const paises = ["Argentina", "México", "Colombia", "Chile", "Perú"];
+  const profesiones = ["empleado", "freelancer", "estudiante", "emprendedor", "desempleado"];
+  const objetivos = ["mejor trabajo", "viajar", "ganar en dólares", "crecer profesionalmente"];
+  const frustraciones = [
+    "intenté aprender inglés y nunca avancé",
+    "me da vergüenza hablar",
+    "no entiendo cuando escucho",
+    "dejé cursos a la mitad"
+  ];
+  const dificultades = [60, 70, 75, 80, 85, 90];
 
-    body {
-        background: var(--bg-dark);
-        font-family: 'Inter', sans-serif;
-        color: var(--text-main);
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-    }
+  return `
+Perfil: ${perfiles[Math.floor(Math.random()*4)]}
+País: ${paises[Math.floor(Math.random()*5)]}
+Profesión: ${profesiones[Math.floor(Math.random()*5)]}
+Objetivo: ${objetivos[Math.floor(Math.random()*4)]}
+Frustración: ${frustraciones[Math.floor(Math.random()*4)]}
+Dificultad: ${dificultades[Math.floor(Math.random()*6)]}%
+`;
+}
 
-    /* HEADER */
-    .header {
-        padding: 20px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: transparent;
-        z-index: 10;
-    }
+// 🧠 PROMPT MASTER
+const systemPrompt = `
+Eres un LEAD LATAM (CLIENTE).
 
-    .header-title {
-        font-weight: 600;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+El usuario es el CLOSER.
 
-    .header-title i {
-        color: var(--primary);
-        font-size: 1.4rem;
-    }
+YA viste toda la presentación del programa.
+NO preguntes info básica.
 
-    .status-badge {
-        background: rgba(16, 185, 129, 0.15);
-        color: #10b981;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.3s ease;
-    }
+Simulación = CIERRE.
 
-    .status-badge.listening {
-        background: rgba(239, 68, 68, 0.15);
-        color: var(--danger);
-    }
+Comportamiento:
+- humano
+- dudas reales
+- objeciones reales
+- respuestas cortas
 
-    /* MAIN STAGE (SIMULACIÓN) */
-    .stage {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        position: relative;
-    }
+Objeciones:
+precio, tiempo, confianza
 
-    .video-card {
-        width: 100%;
-        max-width: 800px;
-        height: 60vh;
-        background: var(--surface);
-        border-radius: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        border: 1px solid var(--border);
-        overflow: hidden;
-    }
+Dificultad alta.
 
-    /* AVATAR */
-    .avatar-wrapper {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+Compra SOLO si:
+✔ confianza
+✔ resuelven objeción
+✔ cierre correcto
 
-    .avatar {
-        width: 160px;
-        height: 160px;
-        background: #e2e8f0;
-        border-radius: 50%;
-        overflow: hidden;
-        position: relative;
-        z-index: 2;
-        border: 4px solid var(--surface);
-        transition: all 0.3s ease;
-    }
+Si no → NO compras.
+`;
 
-    .avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+// 🎬 HEYGEN (NO BLOQUEANTE)
+async function generarVideoHeyGen(texto) {
+  try {
+    const res = await fetch("https://api.heygen.com/v2/video/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": process.env.HEYGEN_API_KEY
+      },
+      body: JSON.stringify({
+        video_inputs: [
+          {
+            character: {
+              type: "avatar",
+              avatar_id: "Josh_public"
+            },
+            voice: {
+              type: "text",
+              input_text: texto
+            }
+          }
+        ]
+      })
+    });
 
-    /* EFECTO RETROILUMINADO (GLOW) AL HABLAR */
-    .talking .avatar {
-        /* alternate hace que el brillo suba y baje suavemente */
-        animation: neon-pulse 1s infinite alternate ease-in-out;
-    }
+    const data = await res.json();
 
-    @keyframes neon-pulse {
-        0% {
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3),
-                        0 0 20px rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.4);
+    if (!data?.data?.video_id) return null;
+
+    return data.data.video_id;
+
+  } catch (err) {
+    console.log("HeyGen error:", err.message);
+    return null;
+  }
+}
+
+async function obtenerVideo(video_id) {
+  try {
+    let url = null;
+    let intentos = 0;
+
+    while (!url && intentos < 10) {
+      const res = await fetch(`https://api.heygen.com/v2/video/status?video_id=${video_id}`, {
+        headers: {
+          "X-Api-Key": process.env.HEYGEN_API_KEY
         }
-        100% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
-                        0 0 40px rgba(59, 130, 246, 0.5),
-                        0 0 60px rgba(59, 130, 246, 0.3);
-            border-color: rgba(59, 130, 246, 0.9);
-        }
+      });
+
+      const data = await res.json();
+
+      if (data?.data?.status === "completed") {
+        url = data.data.video_url;
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+        intentos++;
+      }
     }
 
-    
-    /* SUBTÍTULOS */
-    .subtitles-container {
-        position: absolute;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        max-width: 600px;
-        text-align: center;
-        z-index: 10;
-        pointer-events: none;
+    return url;
+
+  } catch (err) {
+    console.log("Error obteniendo video:", err.message);
+    return null;
+  }
+}
+
+// 🚀 HANDLER
+export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Solo POST" });
     }
 
-    .subtitles {
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(10px);
-        color: white;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-size: 1.1rem;
-        line-height: 1.5;
-        display: inline-block;
-        border: 1px solid rgba(255,255,255,0.05);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
+    const body = typeof req.body === "string"
+      ? JSON.parse(req.body)
+      : req.body;
 
-    .subtitles.visible {
-        opacity: 1;
-    }
-
-    /* DOCK DE CONTROLES (Estilo Videollamada) */
-    .controls-dock {
-        padding: 24px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        background: transparent;
-        padding-bottom: 40px;
-    }
-
-    .btn-control {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--surface-glass);
-        backdrop-filter: blur(10px);
-        color: var(--text-main);
-        font-size: 1.5rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-
-    .btn-control:hover {
-        background: var(--surface);
-        transform: translateY(-2px);
-    }
-
-    .btn-control .tooltip {
-        position: absolute;
-        top: -40px;
-        background: var(--surface);
-        font-size: 0.75rem;
-        padding: 6px 10px;
-        border-radius: 6px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-        white-space: nowrap;
-        border: 1px solid var(--border);
-    }
-
-    .btn-control:hover .tooltip {
-        opacity: 1;
-    }
-
-    /* Botón de hablar principal */
-    .btn-talk {
-        background: var(--primary);
-        border: none;
-        width: 64px;
-        height: 64px;
-        font-size: 1.8rem;
-    }
-
-    .btn-talk:hover {
-        background: var(--primary-hover);
-    }
-
-    .btn-talk.recording {
-        background: var(--danger);
-        animation: pulse-red 1.5s infinite;
-    }
-
-    @keyframes pulse-red {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-
-</style>
-</head>
-
-<body>
-
-<header class="header">
-    <div class="header-title">
-        <i class="ph-fill ph-target"></i> Closers PRO
-    </div>
-    <div id="statusBadge" class="status-badge">
-        <i class="ph-fill ph-check-circle"></i> Listo para iniciar
-    </div>
-</header>
-
-<main class="stage">
-    <div class="video-card">
-        <div id="avatarWrapper" class="avatar-wrapper">
-            <div class="speaking-ring"></div>
-            <div class="avatar">
-                <img id="avatarImg" alt="Avatar del prospecto">
-            </div>
-        </div>
-        
-        <div class="lead-info">
-            <i class="ph-fill ph-user-circle"></i> Lead LATAM
-        </div>
-    </div>
-
-    <div class="subtitles-container">
-        <div id="subtitles" class="subtitles"></div>
-    </div>
-</main>
-
-<footer class="controls-dock">
-    <button class="btn-control" onclick="resetChat()">
-        <i class="ph ph-arrow-counter-clockwise"></i>
-        <span class="tooltip">Reiniciar Sala</span>
-    </button>
-
-    <button id="talkBtn" class="btn-control btn-talk">
-        <i id="micIcon" class="ph-fill ph-microphone"></i>
-        <span class="tooltip">Hablar</span>
-    </button>
-
-    <button class="btn-control" onclick="pausarLead()">
-        <i class="ph ph-pause"></i>
-        <span class="tooltip">Pausar Lead</span>
-    </button>
-
-    <button class="btn-control" onclick="auditar()">
-        <i class="ph ph-chart-line-up"></i>
-        <span class="tooltip">Ver Auditoría</span>
-    </button>
-</footer>
-
-<script>
-    const talkBtn = document.getElementById("talkBtn");
-    const micIcon = document.getElementById("micIcon");
-    const statusBadge = document.getElementById("statusBadge");
-    const subtitles = document.getElementById("subtitles");
-    const avatarWrapper = document.getElementById("avatarWrapper");
-    const avatarImg = document.getElementById("avatarImg");
-
-    // 🎭 Avatar más humano/ilustrativo (Colección 'notionists')
-    function randomAvatar() {
-        const seed = Math.floor(Math.random() * 9999);
-        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=e2e8f0`;
-    }
-    randomAvatar();
-
-    // 🎤 Speech Recognition
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const rec = new Recognition();
-    rec.lang = "es-AR";
-
-    talkBtn.onclick = () => {
-        try {
-            rec.start();
-            // UI Update: Grabando
-            talkBtn.classList.add("recording");
-            micIcon.classList.replace("ph-microphone", "ph-stop");
-            updateStatus("Escuchando...", "listening", "ph-microphone-stage");
-        } catch (e) {
-            console.log("El micrófono ya está activo o bloqueado.");
-        }
-    };
-
-    rec.onend = () => {
-        talkBtn.classList.remove("recording");
-        micIcon.classList.replace("ph-stop", "ph-microphone");
-    }
-
-    rec.onresult = async (event) => {
-        const text = event.results[0][0].transcript;
-
-        mostrarSubtitulo("Tú: " + text);
-        updateStatus("Escribiendo...", "", "ph-dots-three");
-
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: text })
-            });
-
-            const data = await res.json();
-            const respuesta = data.reply || "No obtuve respuesta.";
-
-            mostrarSubtitulo("Lead: " + respuesta);
-            hablar(respuesta);
-        } catch (error) {
-            mostrarSubtitulo("Error de conexión con el simulador.");
-            updateStatus("Error", "", "ph-warning-circle");
-        }
-    };
-
-    // 🎬 SUBTÍTULOS Y ESTADO
-    let subtitleTimeout;
-    function mostrarSubtitulo(text) {
-        subtitles.innerText = text;
-        subtitles.classList.add("visible");
-        
-        clearTimeout(subtitleTimeout);
-        subtitleTimeout = setTimeout(() => {
-            subtitles.classList.remove("visible");
-        }, 8000); // Ocultar después de 8 segundos
-    }
-
-    function updateStatus(text, modeClass = "", iconClass = "ph-info") {
-        statusBadge.className = `status-badge ${modeClass}`;
-        statusBadge.innerHTML = `<i class="ph-fill ${iconClass}"></i> ${text}`;
-    }
-
-    // 🔊 VOZ + ANIMACIÓN SUTIL
-    function hablar(text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "es-ES"; 
-
-        avatarWrapper.classList.add("talking");
-        updateStatus("Lead respondiendo...", "", "ph-speaker-high");
-
-        utterance.onend = () => {
-            avatarWrapper.classList.remove("talking");
-            updateStatus("Tu turno", "", "ph-check-circle");
-        };
-
-        speechSynthesis.speak(utterance);
-    }
-
-    // ⏸️
-    function pausarLead() {
-        speechSynthesis.cancel();
-        avatarWrapper.classList.remove("talking");
-        updateStatus("Simulación pausada", "", "ph-pause-circle");
-    }
+    const msg = body?.message || "";
 
     // 🔄 RESET
-    async function resetChat() {
-        updateStatus("Reiniciando...", "", "ph-arrows-clockwise");
-        try {
-            await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: "/reset" })
-            });
-            mostrarSubtitulo("Simulación reiniciada.");
-            randomAvatar();
-            updateStatus("Listo para iniciar", "", "ph-check-circle");
-        } catch (e) {
-            mostrarSubtitulo("Simulación reiniciada (Local).");
-            randomAvatar();
-            updateStatus("Listo para iniciar", "", "ph-check-circle");
-        }
+    if (msg === "/reset") {
+      historial = [];
+      identidadLead = null;
+      return res.json({ reply: "Simulación reiniciada.", audit: null });
+    }
+
+    // ▶ START
+    if (msg === "/start") {
+      historial = [];
+      identidadLead = generarIdentidad();
+      return res.json({ reply: "Arrancá diciendo el precio.", audit: null });
     }
 
     // 📊 AUDIT
-    async function auditar() {
-        updateStatus("Generando auditoría...", "", "ph-chart-line-up");
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: "/audit" })
-            });
-            const data = await res.json();
-            mostrarSubtitulo(data.reply || "Revisa la consola para el reporte.");
-            updateStatus("Auditoría completa", "", "ph-check-circle");
-        } catch (e) {
-            mostrarSubtitulo("Error al cargar la auditoría.");
-            updateStatus("Error", "", "ph-warning-circle");
-        }
-    }
-</script>
+    if (msg === "/audit") {
+      const texto = historial.map(m => `${m.role}: ${m.content}`).join("\n");
 
-</body>
-</html>
+      const audit = await openai.responses.create({
+        model: "gpt-4o-mini",
+        input: `
+Analiza esta venta:
+
+${texto}
+
+Da:
+- nota (1-10)
+- errores claros
+- 3 mejoras concretas
+`
+      });
+
+      return res.json({
+        reply: "Auditoría generada",
+        audit: audit.output[0].content[0].text
+      });
+    }
+
+    // 🎭 IDENTIDAD
+    if (!identidadLead) {
+      identidadLead = generarIdentidad();
+    }
+
+    // 💬 GUARDAR USER
+    historial.push({ role: "user", content: msg });
+
+    // 🤖 RESPUESTA IA
+    const completion = await openai.responses.create({
+      model: "gpt-4o-mini",
+      input: `
+${systemPrompt}
+
+${identidadLead}
+
+Conversación:
+${historial.map(m => m.role + ": " + m.content).join("\n")}
+`
+    });
+
+    const respuesta = completion.output?.[0]?.content?.[0]?.text || "No tengo respuesta.";
+
+    // 💾 GUARDAR IA
+    historial.push({ role: "assistant", content: respuesta });
+
+    // 🎬 HEYGEN EN PARALELO (NO BLOQUEA UX)
+    let video = null;
+
+    if (process.env.HEYGEN_API_KEY) {
+      const video_id = await generarVideoHeyGen(respuesta);
+
+      if (video_id) {
+        video = await obtenerVideo(video_id);
+      }
+    }
+
+    return res.json({
+      reply: respuesta,
+      audit: null,
+      video // puede ser null
+    });
+
+  } catch (err) {
+    console.error("🔥 ERROR:", err);
+    return res.status(500).json({
+      error: err.message || "Error interno"
+    });
+  }
+}
