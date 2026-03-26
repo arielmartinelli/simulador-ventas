@@ -1,139 +1,457 @@
-<script>
-const btn = document.getElementById("talk");
-const status = document.getElementById("status");
-const avatar = document.getElementById("avatar");
-const avatarImg = document.querySelector("#avatar img");
-const subtitlesContent = document.getElementById("subtitles-content");
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Closers PRO</title>
 
-let speaking = false;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-// 🎲 Avatar random
-function randomAvatar() {
-    const gender = Math.random() > 0.5 ? "men" : "women";
-    const id = Math.floor(Math.random() * 99);
-    avatarImg.src = `https://randomuser.me/api/portraits/${gender}/${id}.jpg`;
-}
-randomAvatar();
+<style>
+    :root {
+        --bg-dark: #0f172a;
+        --surface: #1e293b;
+        --surface-glass: rgba(30, 41, 59, 0.7);
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --danger: #ef4444;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.1);
+    }
 
-// 🎤 Speech
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const rec = new Recognition();
-rec.lang = "es-AR";
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-btn.onclick = () => {
-    rec.start();
-    status.innerText = "Escuchando...";
-};
+    body {
+        background: var(--bg-dark);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-rec.onresult = async (event) => {
-    const text = event.results[0][0].transcript;
+    /* HEADER */
+    .header {
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: transparent;
+        z-index: 10;
+    }
 
-    mostrarSubtitulo("Tú: " + text);
-    status.innerText = "Procesando...";
+    .header-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-    try {
-        const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ message: text })
-        });
+    .header-title i {
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
 
-        const data = await res.json();
+    .status-badge {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+    }
 
-        const respuesta = data.reply || "Error en respuesta";
+    .status-badge.listening {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+    }
 
-        mostrarSubtitulo("Lead: " + respuesta);
+    /* MAIN STAGE (SIMULACIÓN) */
+    .stage {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        position: relative;
+    }
 
-        if (data.audio) {
-            reproducirAudio(data.audio);
-        } else {
-            status.innerText = "Tu turno";
+    .video-card {
+        width: 100%;
+        max-width: 800px;
+        height: 60vh;
+        background: var(--surface);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    /* AVATAR */
+    .avatar-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar {
+        width: 160px;
+        height: 160px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        border: 4px solid var(--surface);
+        transition: all 0.3s ease;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* EFECTO RETROILUMINADO (GLOW) AL HABLAR */
+    .talking .avatar {
+        /* alternate hace que el brillo suba y baje suavemente */
+        animation: neon-pulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes neon-pulse {
+        0% {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3),
+                        0 0 20px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
         }
-
-    } catch (err) {
-        console.error(err);
-        mostrarSubtitulo("Error de conexión");
-        status.innerText = "Error";
-    }
-};
-
-// 🎬 SUBTÍTULOS PRO
-function mostrarSubtitulo(text) {
-    const line = document.createElement("div");
-    line.className = "subtitle-line active";
-    line.innerText = text;
-
-    const all = subtitlesContent.querySelectorAll(".subtitle-line");
-    all.forEach(el => el.classList.remove("active"));
-
-    subtitlesContent.appendChild(line);
-
-    const total = subtitlesContent.children.length;
-
-    if (total > 4) {
-        const offset = (total - 4) * 30;
-        subtitlesContent.style.transform = `translateY(-${offset}px)`;
+        100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
+                        0 0 40px rgba(59, 130, 246, 0.5),
+                        0 0 60px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.9);
+        }
     }
 
-    if (total > 10) {
-        subtitlesContent.removeChild(subtitlesContent.firstChild);
+    
+    /* SUBTÍTULOS */
+    .subtitles-container {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        max-width: 600px;
+        text-align: center;
+        z-index: 10;
+        pointer-events: none;
     }
-}
 
-// 🔊 AUDIO REAL
-function reproducirAudio(base64Audio) {
-    const audio = new Audio("data:audio/mp3;base64," + base64Audio);
+    .subtitles {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 14px 24px;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        display: inline-block;
+        border: 1px solid rgba(255,255,255,0.05);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
 
-    speaking = true;
-    avatar.classList.add("talking");
-    status.innerText = "Lead hablando...";
+    .subtitles.visible {
+        opacity: 1;
+    }
 
-    audio.play();
+    /* DOCK DE CONTROLES (Estilo Videollamada) */
+    .controls-dock {
+        padding: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        background: transparent;
+        padding-bottom: 40px;
+    }
 
-    audio.onended = () => {
-        avatar.classList.remove("talking");
-        speaking = false;
-        status.innerText = "Tu turno";
-    };
-}
+    .btn-control {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--surface-glass);
+        backdrop-filter: blur(10px);
+        color: var(--text-main);
+        font-size: 1.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
 
-// ⏸️
-function pausarLead() {
-    speechSynthesis.cancel();
-    avatar.classList.remove("talking");
-    speaking = false;
-    status.innerText = "Pausado";
-}
+    .btn-control:hover {
+        background: var(--surface);
+        transform: translateY(-2px);
+    }
 
-// 🔄 RESET
-async function resetChat() {
-    await fetch("/api/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ message: "/reset" })
-    });
+    .btn-control .tooltip {
+        position: absolute;
+        top: -40px;
+        background: var(--surface);
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+        border: 1px solid var(--border);
+    }
 
-    // limpiar historial visual SIN romper estructura
-    subtitlesContent.innerHTML = "";
-    mostrarSubtitulo("Nueva simulación iniciada...");
+    .btn-control:hover .tooltip {
+        opacity: 1;
+    }
 
+    /* Botón de hablar principal */
+    .btn-talk {
+        background: var(--primary);
+        border: none;
+        width: 64px;
+        height: 64px;
+        font-size: 1.8rem;
+    }
+
+    .btn-talk:hover {
+        background: var(--primary-hover);
+    }
+
+    .btn-talk.recording {
+        background: var(--danger);
+        animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="header-title">
+        <i class="ph-fill ph-target"></i> Closers PRO
+    </div>
+    <div id="statusBadge" class="status-badge">
+        <i class="ph-fill ph-check-circle"></i> Listo para iniciar
+    </div>
+</header>
+
+<main class="stage">
+    <div class="video-card">
+        <div id="avatarWrapper" class="avatar-wrapper">
+            <div class="speaking-ring"></div>
+            <div class="avatar">
+                <img id="avatarImg" alt="Avatar del prospecto">
+            </div>
+        </div>
+        
+        <div class="lead-info">
+            <i class="ph-fill ph-user-circle"></i> Lead LATAM
+        </div>
+    </div>
+
+    <div class="subtitles-container">
+        <div id="subtitles" class="subtitles"></div>
+    </div>
+</main>
+
+<footer class="controls-dock">
+    <button class="btn-control" onclick="resetChat()">
+        <i class="ph ph-arrow-counter-clockwise"></i>
+        <span class="tooltip">Reiniciar Sala</span>
+    </button>
+
+    <button id="talkBtn" class="btn-control btn-talk">
+        <i id="micIcon" class="ph-fill ph-microphone"></i>
+        <span class="tooltip">Hablar</span>
+    </button>
+
+    <button class="btn-control" onclick="pausarLead()">
+        <i class="ph ph-pause"></i>
+        <span class="tooltip">Pausar Lead</span>
+    </button>
+
+    <button class="btn-control" onclick="auditar()">
+        <i class="ph ph-chart-line-up"></i>
+        <span class="tooltip">Ver Auditoría</span>
+    </button>
+</footer>
+
+<script>
+    const talkBtn = document.getElementById("talkBtn");
+    const micIcon = document.getElementById("micIcon");
+    const statusBadge = document.getElementById("statusBadge");
+    const subtitles = document.getElementById("subtitles");
+    const avatarWrapper = document.getElementById("avatarWrapper");
+    const avatarImg = document.getElementById("avatarImg");
+
+    // 🎭 Avatar más humano/ilustrativo (Colección 'notionists')
+    function randomAvatar() {
+        const seed = Math.floor(Math.random() * 9999);
+        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=e2e8f0`;
+    }
     randomAvatar();
-    status.innerText = "Listo";
-}
 
-// 📊 AUDITORÍA
-async function auditar() {
-    status.innerText = "Analizando...";
+    // 🎤 Speech Recognition
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Recognition();
+    rec.lang = "es-AR";
 
-    const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ message: "/audit" })
-    });
+    talkBtn.onclick = () => {
+        try {
+            rec.start();
+            // UI Update: Grabando
+            talkBtn.classList.add("recording");
+            micIcon.classList.replace("ph-microphone", "ph-stop");
+            updateStatus("Escuchando...", "listening", "ph-microphone-stage");
+        } catch (e) {
+            console.log("El micrófono ya está activo o bloqueado.");
+        }
+    };
 
-    const data = await res.json();
+    rec.onend = () => {
+        talkBtn.classList.remove("recording");
+        micIcon.classList.replace("ph-stop", "ph-microphone");
+    }
 
-    mostrarSubtitulo("📊 " + (data.reply || "Error"));
-    status.innerText = "Auditoría lista";
-}
+    rec.onresult = async (event) => {
+        const text = event.results[0][0].transcript;
+
+        mostrarSubtitulo("Tú: " + text);
+        updateStatus("Escribiendo...", "", "ph-dots-three");
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await res.json();
+            const respuesta = data.reply || "No obtuve respuesta.";
+
+            mostrarSubtitulo("Lead: " + respuesta);
+            hablar(respuesta);
+        } catch (error) {
+            mostrarSubtitulo("Error de conexión con el simulador.");
+            updateStatus("Error", "", "ph-warning-circle");
+        }
+    };
+
+    // 🎬 SUBTÍTULOS Y ESTADO
+    let subtitleTimeout;
+    function mostrarSubtitulo(text) {
+        subtitles.innerText = text;
+        subtitles.classList.add("visible");
+        
+        clearTimeout(subtitleTimeout);
+        subtitleTimeout = setTimeout(() => {
+            subtitles.classList.remove("visible");
+        }, 8000); // Ocultar después de 8 segundos
+    }
+
+    function updateStatus(text, modeClass = "", iconClass = "ph-info") {
+        statusBadge.className = `status-badge ${modeClass}`;
+        statusBadge.innerHTML = `<i class="ph-fill ${iconClass}"></i> ${text}`;
+    }
+
+    // 🔊 VOZ + ANIMACIÓN SUTIL
+    function hablar(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "es-ES"; 
+
+        avatarWrapper.classList.add("talking");
+        updateStatus("Lead respondiendo...", "", "ph-speaker-high");
+
+        utterance.onend = () => {
+            avatarWrapper.classList.remove("talking");
+            updateStatus("Tu turno", "", "ph-check-circle");
+        };
+
+        speechSynthesis.speak(utterance);
+    }
+
+    // ⏸️
+    function pausarLead() {
+        speechSynthesis.cancel();
+        avatarWrapper.classList.remove("talking");
+        updateStatus("Simulación pausada", "", "ph-pause-circle");
+    }
+
+    // 🔄 RESET
+    async function resetChat() {
+        updateStatus("Reiniciando...", "", "ph-arrows-clockwise");
+        try {
+            await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: "/reset" })
+            });
+            mostrarSubtitulo("Simulación reiniciada.");
+            randomAvatar();
+            updateStatus("Listo para iniciar", "", "ph-check-circle");
+        } catch (e) {
+            mostrarSubtitulo("Simulación reiniciada (Local).");
+            randomAvatar();
+            updateStatus("Listo para iniciar", "", "ph-check-circle");
+        }
+    }
+
+    // 📊 AUDIT
+    async function auditar() {
+        updateStatus("Generando auditoría...", "", "ph-chart-line-up");
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: "/audit" })
+            });
+            const data = await res.json();
+            mostrarSubtitulo(data.reply || "Revisa la consola para el reporte.");
+            updateStatus("Auditoría completa", "", "ph-check-circle");
+        } catch (e) {
+            mostrarSubtitulo("Error al cargar la auditoría.");
+            updateStatus("Error", "", "ph-warning-circle");
+        }
+    }
 </script>
+
+</body>
+</html>
