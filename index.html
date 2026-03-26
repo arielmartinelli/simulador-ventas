@@ -1,231 +1,254 @@
-import OpenAI from "openai";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Closers PRO</title>
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-let historial = [];
-let identidadLead = null;
-
-// 🎭 IDENTIDAD REALISTA
-function generarIdentidad() {
-  const perfiles = ["ZAFIRO", "PERLA", "ESMERALDA", "RUBÍ"];
-  const paises = ["Argentina", "México", "Colombia", "Chile", "Perú"];
-  const profesiones = ["empleado", "freelancer", "estudiante", "emprendedor", "desempleado"];
-  const objetivos = ["mejor trabajo", "viajar", "ganar en dólares", "crecer profesionalmente"];
-  const frustraciones = [
-    "intenté aprender inglés y nunca avancé",
-    "me da vergüenza hablar",
-    "no entiendo cuando escucho",
-    "dejé cursos a la mitad"
-  ];
-  const dificultades = [60, 70, 75, 80, 85, 90];
-
-  return `
-Perfil: ${perfiles[Math.floor(Math.random()*4)]}
-País: ${paises[Math.floor(Math.random()*5)]}
-Profesión: ${profesiones[Math.floor(Math.random()*5)]}
-Objetivo: ${objetivos[Math.floor(Math.random()*4)]}
-Frustración: ${frustraciones[Math.floor(Math.random()*4)]}
-Dificultad: ${dificultades[Math.floor(Math.random()*6)]}%
-`;
+<style>
+body {
+  margin: 0;
+  background: #0f172a;
+  color: white;
+  font-family: sans-serif;
+  display: flex;
+  height: 100vh;
 }
 
-// 🧠 PROMPT MASTER
-const systemPrompt = `
-Eres un LEAD LATAM (CLIENTE).
+/* IZQUIERDA */
+.chat {
+  width: 25%;
+  background: #020617;
+  padding: 15px;
+  overflow: hidden;
+}
 
-El usuario es el CLOSER.
+#chatContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.4s;
+}
 
-YA viste toda la presentación del programa.
-NO preguntes info básica.
+.msg { opacity: 0.5; }
+.msg.active { opacity: 1; font-weight: bold; }
 
-Simulación = CIERRE.
+/* CENTRO */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
-Comportamiento:
-- humano
-- dudas reales
-- objeciones reales
-- respuestas cortas
+.avatar {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
 
-Objeciones:
-precio, tiempo, confianza
+.avatar img, .avatar video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-Dificultad alta.
+/* ESTADO */
+.status {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+}
 
-Compra SOLO si:
-✔ confianza
-✔ resuelven objeción
-✔ cierre correcto
+/* DERECHA */
+.audit {
+  width: 25%;
+  background: #020617;
+  padding: 15px;
+  overflow-y: auto;
+}
 
-Si no → NO compras.
-`;
+/* BOTONES */
+.controls {
+  position: absolute;
+  bottom: 20px;
+}
 
-// 🎬 HEYGEN (NO BLOQUEANTE)
-async function generarVideoHeyGen(texto) {
+button {
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- IZQUIERDA -->
+<div class="chat">
+  <div id="chatContent"></div>
+</div>
+
+<!-- CENTRO -->
+<div class="main">
+
+  <div class="avatar">
+    <img id="avatarImg">
+    <video id="avatarVideo" autoplay muted playsinline style="display:none;"></video>
+  </div>
+
+  <div id="status" class="status">Listo</div>
+
+  <div class="controls">
+    <button onclick="start()">▶ Start</button>
+    <button onclick="reset()">🔄 Reset</button>
+    <button onclick="audit()">📊 Audit</button>
+    <button onclick="talk()">🎤 Hablar</button>
+  </div>
+</div>
+
+<!-- DERECHA -->
+<div class="audit">
+  <h3>Auditoría</h3>
+  <div id="auditBox">Sin análisis</div>
+</div>
+
+<script>
+const chatContent = document.getElementById("chatContent");
+const auditBox = document.getElementById("auditBox");
+const avatarImg = document.getElementById("avatarImg");
+const avatarVideo = document.getElementById("avatarVideo");
+const status = document.getElementById("status");
+
+// 🎭 avatar base
+avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
+
+// 🧾 MENSAJES
+function addMsg(text) {
+  const div = document.createElement("div");
+  div.className = "msg active";
+  div.innerText = text;
+
+  document.querySelectorAll(".msg").forEach(m => m.classList.remove("active"));
+
+  chatContent.appendChild(div);
+
+  const total = chatContent.children.length;
+  if (total > 6) {
+    chatContent.style.transform = `translateY(-${(total-6)*30}px)`;
+  }
+}
+
+// 🎤 speech recognition
+const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+rec.lang = "es-AR";
+
+function talk() {
   try {
-    const res = await fetch("https://api.heygen.com/v2/video/generate", {
+    rec.start();
+    status.innerText = "Escuchando...";
+  } catch {
+    console.log("Mic ya activo");
+  }
+}
+
+rec.onresult = async (e) => {
+  const text = e.results[0][0].transcript;
+
+  addMsg("Tú: " + text);
+  status.innerText = "Procesando...";
+
+  try {
+    const res = await fetch("/api/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": process.env.HEYGEN_API_KEY
-      },
-      body: JSON.stringify({
-        video_inputs: [
-          {
-            character: {
-              type: "avatar",
-              avatar_id: "Josh_public"
-            },
-            voice: {
-              type: "text",
-              input_text: texto
-            }
-          }
-        ]
-      })
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ message: text })
     });
 
     const data = await res.json();
 
-    if (!data?.data?.video_id) return null;
+    const respuesta = data.reply || "Sin respuesta";
+    addMsg("Lead: " + respuesta);
 
-    return data.data.video_id;
+    // 🔊 VOZ
+    hablar(respuesta);
+
+    // 🎬 VIDEO HEYGEN
+    if (data.video) {
+      avatarImg.style.display = "none";
+      avatarVideo.style.display = "block";
+      avatarVideo.src = data.video;
+      avatarVideo.play();
+    } else {
+      avatarVideo.style.display = "none";
+      avatarImg.style.display = "block";
+    }
+
+    status.innerText = "Tu turno";
 
   } catch (err) {
-    console.log("HeyGen error:", err.message);
-    return null;
+    console.error(err);
+    status.innerText = "Error";
+    addMsg("Error de conexión");
   }
+};
+
+// 🔊 VOZ NATURAL
+function hablar(texto) {
+  const u = new SpeechSynthesisUtterance(texto);
+  u.lang = "es-ES";
+  u.rate = 0.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 
-async function obtenerVideo(video_id) {
-  try {
-    let url = null;
-    let intentos = 0;
+// ▶ START
+async function start() {
+  const res = await fetch("/api/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({message:"/start"})
+  });
 
-    while (!url && intentos < 10) {
-      const res = await fetch(`https://api.heygen.com/v2/video/status?video_id=${video_id}`, {
-        headers: {
-          "X-Api-Key": process.env.HEYGEN_API_KEY
-        }
-      });
-
-      const data = await res.json();
-
-      if (data?.data?.status === "completed") {
-        url = data.data.video_url;
-      } else {
-        await new Promise(r => setTimeout(r, 2000));
-        intentos++;
-      }
-    }
-
-    return url;
-
-  } catch (err) {
-    console.log("Error obteniendo video:", err.message);
-    return null;
-  }
+  const data = await res.json();
+  addMsg(data.reply);
 }
 
-// 🚀 HANDLER
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Solo POST" });
-    }
+// 🔄 RESET
+async function reset() {
+  await fetch("/api/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({message:"/reset"})
+  });
 
-    const body = typeof req.body === "string"
-      ? JSON.parse(req.body)
-      : req.body;
+  chatContent.innerHTML = "";
+  auditBox.innerText = "Sin análisis";
 
-    const msg = body?.message || "";
+  avatarVideo.style.display = "none";
+  avatarImg.style.display = "block";
 
-    // 🔄 RESET
-    if (msg === "/reset") {
-      historial = [];
-      identidadLead = null;
-      return res.json({ reply: "Simulación reiniciada.", audit: null });
-    }
-
-    // ▶ START
-    if (msg === "/start") {
-      historial = [];
-      identidadLead = generarIdentidad();
-      return res.json({ reply: "Arrancá diciendo el precio.", audit: null });
-    }
-
-    // 📊 AUDIT
-    if (msg === "/audit") {
-      const texto = historial.map(m => `${m.role}: ${m.content}`).join("\n");
-
-      const audit = await openai.responses.create({
-        model: "gpt-4o-mini",
-        input: `
-Analiza esta venta:
-
-${texto}
-
-Da:
-- nota (1-10)
-- errores claros
-- 3 mejoras concretas
-`
-      });
-
-      return res.json({
-        reply: "Auditoría generada",
-        audit: audit.output[0].content[0].text
-      });
-    }
-
-    // 🎭 IDENTIDAD
-    if (!identidadLead) {
-      identidadLead = generarIdentidad();
-    }
-
-    // 💬 GUARDAR USER
-    historial.push({ role: "user", content: msg });
-
-    // 🤖 RESPUESTA IA
-    const completion = await openai.responses.create({
-      model: "gpt-4o-mini",
-      input: `
-${systemPrompt}
-
-${identidadLead}
-
-Conversación:
-${historial.map(m => m.role + ": " + m.content).join("\n")}
-`
-    });
-
-    const respuesta = completion.output?.[0]?.content?.[0]?.text || "No tengo respuesta.";
-
-    // 💾 GUARDAR IA
-    historial.push({ role: "assistant", content: respuesta });
-
-    // 🎬 HEYGEN EN PARALELO (NO BLOQUEA UX)
-    let video = null;
-
-    if (process.env.HEYGEN_API_KEY) {
-      const video_id = await generarVideoHeyGen(respuesta);
-
-      if (video_id) {
-        video = await obtenerVideo(video_id);
-      }
-    }
-
-    return res.json({
-      reply: respuesta,
-      audit: null,
-      video // puede ser null
-    });
-
-  } catch (err) {
-    console.error("🔥 ERROR:", err);
-    return res.status(500).json({
-      error: err.message || "Error interno"
-    });
-  }
+  status.innerText = "Reiniciado";
 }
+
+// 📊 AUDIT
+async function audit() {
+  status.innerText = "Analizando...";
+
+  const res = await fetch("/api/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({message:"/audit"})
+  });
+
+  const data = await res.json();
+
+  auditBox.innerText = data.audit || "Sin datos";
+  status.innerText = "Listo";
+}
+</script>
+
+</body>
+</html>
