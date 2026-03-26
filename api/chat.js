@@ -22,28 +22,60 @@ function generarIdentidad() {
   const dificultades = [60, 70, 75, 80, 85, 90];
 
   return `
+IDENTIDAD INTERNA (NO REVELAR):
+
 Perfil: ${perfiles[Math.floor(Math.random()*4)]}
 País: ${paises[Math.floor(Math.random()*5)]}
 Profesión: ${profesiones[Math.floor(Math.random()*5)]}
 Objetivo: ${objetivos[Math.floor(Math.random()*4)]}
 Frustración: ${frustraciones[Math.floor(Math.random()*4)]}
 Dificultad: ${dificultades[Math.floor(Math.random()*6)]}%
+
+- Mantener SIEMPRE personalidad
+- No revelar identidad
 `;
 }
 
+// 🧠 PROMPT PRO (POST-PRESENTACIÓN)
 const systemPrompt = `
 Eres un LEAD LATAM.
 
-- No eres IA
-- No ayudas al closer
-- Eres difícil (60-90%)
+YA viste toda la presentación del programa:
+- Clases grabadas A1-B2 + C1
+- Clases en vivo
+- 1 a 1
+- Discord
+- Garantía B2
 
-El closer arranca diciendo el precio.
+NO preguntes info básica.
 
-Haz objeciones reales:
-precio, tiempo, confianza
+OBJETIVO:
+Simular cierre.
 
-Compra SOLO si te convencen.
+El closer SIEMPRE arranca diciendo el precio.
+
+Desde ahí:
+- reaccionas real
+- dudas
+- objeciones
+- negocias
+
+OBJECIONES:
+precio, tiempo, confianza, comparación
+
+COMPORTAMIENTO:
+- Español natural
+- humano
+- corto/medio
+
+DIFICULTAD: ALTA (60-90%)
+
+COMPRA SOLO SI:
+✔ confianza
+✔ resolución objeciones
+✔ buen cierre
+
+Si falta algo → NO compras
 `;
 
 export default async function handler(req, res) {
@@ -58,28 +90,43 @@ export default async function handler(req, res) {
 
     const mensajeUsuario = body?.message || "";
 
-    // RESET
+    // 🔄 RESET
     if (mensajeUsuario === "/reset") {
       historial = [];
       identidadLead = null;
-      return res.json({ reply: "Reset OK" });
+      return res.json({ reply: "Simulación reiniciada." });
     }
 
-    // AUDIT (corregido)
+    // 🚀 INICIO AUTOMÁTICO (CIERRE)
+    if (mensajeUsuario === "/start") {
+      historial = [];
+      identidadLead = generarIdentidad();
+
+      const mensajeInicial = "El programa cuesta 300 dólares, ¿cómo lo ves?";
+
+      historial.push({
+        role: "user",
+        content: mensajeInicial
+      });
+
+      return res.json({ reply: mensajeInicial });
+    }
+
+    // 📊 AUDITORÍA
     if (mensajeUsuario === "/audit") {
       const texto = historial.map(m => m.content).join("\n");
 
       const audit = await openai.responses.create({
         model: "gpt-4o-mini",
         input: `
-Analiza esta conversación:
+Analiza esta llamada:
 
 ${texto}
 
 Da:
 - nota 1 a 10
-- errores
-- 3 mejoras
+- errores claros
+- 3 mejoras concretas
 `
       });
 
@@ -88,7 +135,6 @@ Da:
       });
     }
 
-    // identidad fija
     if (!identidadLead) {
       identidadLead = generarIdentidad();
     }
@@ -98,7 +144,6 @@ Da:
       content: mensajeUsuario
     });
 
-    // ✅ RESPUESTA (NUEVO SDK)
     const completion = await openai.responses.create({
       model: "gpt-4o-mini",
       input: `
@@ -121,7 +166,7 @@ ${historial.map(m => m.role + ": " + m.content).join("\n")}
     return res.json({ reply: respuesta });
 
   } catch (error) {
-    console.error("🔥 ERROR REAL:", error);
+    console.error("🔥 ERROR:", error);
     return res.status(500).json({ error: error.message });
   }
 }
