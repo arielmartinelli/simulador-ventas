@@ -4,25 +4,31 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 let historial=[];
 let identidad="";
-let configUser=null;
+let leadPublic={};
 
 const r=a=>a[Math.floor(Math.random()*a.length)];
 
-function generar(c){
-return `
-Perfil: ${c.perfil}
-Objeción: ${c.objecion}
-Dificultad: ${c.dificultad}%
+function generarLead(){
 
-Personalidad:
-ZAFIRO=energético
-PERLA=inseguro
-ESMERALDA=lógico
-RUBÍ=ambicioso
+const nombres=["Juan","Carlos","Martina","Sofía","Lucas"];
+const paises=["Argentina","México","Colombia","Chile"];
+const profesiones=["empleado","freelancer","estudiante"];
+const perfiles=["ZAFIRO","PERLA","ESMERALDA","RUBÍ"];
 
-Objetivo: ${r(["dinero","mejorar vida","viajar"])}
-Frustración: ${r(["no avanzo","me frustro","me cuesta"])}
+const perfil=r(perfiles);
+
+leadPublic={
+name: r(nombres),
+desc: `${r(profesiones)} de ${r(paises)} • Quiere aprender inglés para ${r(["trabajar mejor","ganar más dinero","viajar"])} • Problema: ${r(["no avanza","le cuesta","lo deja siempre"])}`
+};
+
+identidad=`
+Perfil: ${perfil}
+Actitud según perfil.
+
+No reveles el perfil.
 `;
+
 }
 
 export default async function handler(req,res){
@@ -33,15 +39,18 @@ const msg=body.message;
 // START
 if(msg==="/start"){
 historial=[];
-configUser=body.config;
-identidad=generar(configUser);
-return res.json({reply:"Decime el precio"});
+generarLead();
+
+return res.json({
+reply:"Arranca",
+name:leadPublic.name,
+desc:leadPublic.desc
+});
 }
 
 // RESET
 if(msg==="/reset"){
 historial=[];
-identidad="";
 return res.json({reply:"reset"});
 }
 
@@ -51,16 +60,7 @@ const texto=historial.map(m=>m.role+": "+m.content).join("\n");
 
 const rta=await openai.responses.create({
 model:"gpt-4o-mini",
-input:`
-Analiza esta llamada de ventas:
-
-${texto}
-
-Devuelve:
-- nota 1-10
-- errores
-- mejoras
-`
+input:`Analiza esta venta:\n${texto}`
 });
 
 return res.json({reply:rta.output[0].content[0].text});
@@ -73,7 +73,6 @@ const ai=await openai.responses.create({
 model:"gpt-4o-mini",
 input:`
 Eres un cliente real.
-No vendas.
 
 ${identidad}
 

@@ -2,29 +2,25 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Closers PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-:root {
+:root{
 --bg:#0f172a;
 --surface:#1e293b;
---glass:rgba(30,41,59,0.6);
 --primary:#3b82f6;
 --danger:#ef4444;
 --text:#f8fafc;
 --muted:#94a3b8;
---border:rgba(255,255,255,0.1);
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
-
 body{
-background:var(--bg);
+margin:0;
 font-family:Inter;
+background:var(--bg);
 color:var(--text);
 display:flex;
 flex-direction:column;
@@ -33,17 +29,26 @@ height:100vh;
 
 /* HEADER */
 .header{
-padding:20px 30px;
+padding:20px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
 
-.status{
-background:rgba(16,185,129,.15);
-padding:6px 12px;
-border-radius:20px;
+/* LEAD INFO */
+.lead-card{
+text-align:center;
+margin-bottom:10px;
+}
+
+.lead-name{
+font-size:18px;
+font-weight:600;
+}
+
+.lead-desc{
 font-size:13px;
+color:var(--muted);
+margin-top:5px;
 }
 
 /* STAGE */
@@ -52,70 +57,48 @@ flex:1;
 display:flex;
 justify-content:center;
 align-items:center;
-position:relative;
+flex-direction:column;
 }
 
-.video-card {
-    width: 100%;
-    max-width: 720px;
-    height: 60vh;
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    border-radius: 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+.video-card{
+width:700px;
+height:55vh;
+background:#1e293b;
+border-radius:24px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 }
 
 /* AVATAR */
-.avatar {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 4px solid rgba(255,255,255,0.1);
-    transition: all 0.3s ease;
+.avatar{
+width:140px;
+height:140px;
+border-radius:50%;
+overflow:hidden;
 }
 
-/* EFECTO CUANDO HABLA */
-.talking .avatar {
-    animation: glowSpeak 1s infinite alternate;
+.talking .avatar{
+animation:glow 1s infinite alternate;
 }
 
-@keyframes glowSpeak {
-    0% {
-        box-shadow: 0 0 10px rgba(59,130,246,0.2);
-    }
-    100% {
-        box-shadow: 0 0 40px rgba(59,130,246,0.9),
-                    0 0 80px rgba(59,130,246,0.4);
-    }
-}
-
-.lead-name {
-    margin-top: 16px;
-    font-size: 0.95rem;
-    color: #cbd5f5;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.8;
+@keyframes glow{
+0%{box-shadow:0 0 10px rgba(59,130,246,.3)}
+100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
 }
 
 /* SUB */
-.subtitles{
+.sub{
 position:absolute;
 bottom:40px;
 background:rgba(0,0,0,.6);
-padding:12px 20px;
-border-radius:12px;
+padding:10px 20px;
+border-radius:10px;
 opacity:0;
 transition:.3s;
 }
-.subtitles.show{opacity:1}
+.show{opacity:1}
 
 /* CONTROLS */
 .controls{
@@ -125,82 +108,19 @@ gap:20px;
 padding:20px;
 }
 
-.btn-control {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(30,41,59,0.6);
-    backdrop-filter: blur(12px);
-    color: white;
-    font-size: 1.4rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.btn-control:hover {
-    transform: translateY(-4px) scale(1.05);
-    background: #1e293b;
-}
-
-.btn-talk {
-    background: #3b82f6;
-    width: 64px;
-    height: 64px;
-    font-size: 1.8rem;
-}
-
-.btn-talk.recording {
-    background: #ef4444;
-    animation: pulseRec 1.4s infinite;
-}
-
-@keyframes pulseRec {
-    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
-    70% { box-shadow: 0 0 0 18px rgba(239,68,68,0); }
-}
-
-.status-badge {
-    background: rgba(16,185,129,0.15);
-    color: #10b981;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.status-badge.listening {
-    background: rgba(239,68,68,0.15);
-    color: #ef4444;
-}
-
-/* MODAL */
-#config{
-position:fixed;
-inset:0;
-background:#0f172a;
+.btn{
+width:60px;
+height:60px;
+border-radius:50%;
+background:#1e293b;
 display:flex;
-justify-content:center;
 align-items:center;
-z-index:999;
+justify-content:center;
+cursor:pointer;
 }
 
-.box{
-background:var(--surface);
-padding:30px;
-border-radius:20px;
-width:300px;
-}
-
-select,button{
-width:100%;
-margin-top:10px;
-padding:10px;
-border-radius:10px;
-}
+.talk{background:var(--primary)}
+.recording{background:var(--danger)}
 
 /* SCREENS */
 .screen{
@@ -210,65 +130,33 @@ background:#0f172a;
 display:none;
 padding:30px;
 overflow:auto;
-z-index:999;
-font-family:"JetBrains Mono", monospace;
+font-family:"JetBrains Mono";
 }
-
-.chat-line{
-margin-bottom:10px;
-}
-.user{color:#60a5fa}
-.lead{color:#34d399}
 </style>
 </head>
 
 <body>
 
-<!-- CONFIG -->
-<div id="config">
-<div class="box">
-<h3>Configurar Lead</h3>
-
-<select id="perfil">
-<option>ZAFIRO</option>
-<option>PERLA</option>
-<option>ESMERALDA</option>
-<option>RUBÍ</option>
-</select>
-
-<select id="objecion">
-<option>precio</option>
-<option>tiempo</option>
-<option>confianza</option>
-<option>experiencias</option>
-</select>
-
-<select id="dificultad">
-<option value="60">60%</option>
-<option value="80">80%</option>
-<option value="90">90%</option>
-</select>
-
-<button onclick="start()">Iniciar</button>
-</div>
-</div>
-
 <header class="header">
 <div>🎯 Closers PRO</div>
-<div id="status" class="status">Listo</div>
+<div id="status">Listo</div>
 </header>
 
 <main class="stage">
+
+<div class="lead-card">
+<div id="leadName" class="lead-name"></div>
+<div id="leadDesc" class="lead-desc"></div>
+</div>
+
 <div id="avatarWrap" class="video-card">
 <div class="avatar">
-    <div class="lead-name">
-    <i class="ph-fill ph-user-circle"></i> Lead LATAM
-</div>
 <img id="avatarImg">
 </div>
 </div>
 
-<div id="sub" class="subtitles"></div>
+<div id="sub" class="sub"></div>
+
 </main>
 
 <footer class="controls">
@@ -278,34 +166,31 @@ margin-bottom:10px;
 <div class="btn" onclick="audit()">📊</div>
 </footer>
 
-<!-- TRANS -->
 <div id="transScreen" class="screen"></div>
-
-<!-- AUDIT -->
 <div id="auditScreen" class="screen"></div>
 
 <script>
 let historial=[];
-let config={};
 
+// avatar
 avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-async function start(){
-config={
-perfil:perfil.value,
-objecion:objecion.value,
-dificultad:dificultad.value
-};
-
-await fetch("/api/chat",{
+// generar lead en pantalla
+async function generarLeadUI(){
+const res=await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/start",config})
+body:JSON.stringify({message:"/start"})
 });
+const data=await res.json();
 
-config.style.display="none";
+leadName.innerText=data.name;
+leadDesc.innerText=data.desc;
 }
 
+generarLeadUI();
+
+// voz
 const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
 rec.lang="es-AR";
 
@@ -343,7 +228,7 @@ hablar(data.reply);
 function mostrar(t){
 sub.innerText=t;
 sub.classList.add("show");
-setTimeout(()=>sub.classList.remove("show"),6000);
+setTimeout(()=>sub.classList.remove("show"),5000);
 }
 
 function hablar(t){
@@ -360,19 +245,22 @@ status.innerText="Tu turno";
 speechSynthesis.speak(u);
 }
 
+// reset
 async function reset(){
 historial=[];
-await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
-status.innerText="Reiniciado";
+await generarLeadUI();
+status.innerText="Nuevo lead generado";
 }
 
+// trans
 function trans(){
 transScreen.style.display="block";
 transScreen.innerHTML="<h2>Transcripción</h2>"+historial.map(m=>
-`<div class="chat-line ${m.role==='user'?'user':'lead'}">${m.role==='user'?'TÚ':'LEAD'}: ${m.text}</div>`
+`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`
 ).join("");
 }
 
+// audit
 async function audit(){
 const r=await fetch("/api/chat",{
 method:"POST",
