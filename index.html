@@ -285,8 +285,18 @@ const data = await res.json();
 audioActual = new Audio("data:audio/mp3;base64," + data.audio);
 
 // emoción → velocidad
-if(emocion==="enojo") audioActual.playbackRate = 1.1;
-if(emocion==="duda") audioActual.playbackRate = 0.9;
+if(emocion==="enojo"){
+    audioActual.playbackRate = 1.2; // habla más rápido
+}
+else if(emocion==="duda"){
+    audioActual.playbackRate = 1.1; // habla más lento
+}
+else if(emocion==="interes"){
+    audioActual.playbackRate = 1.1;
+}
+else{
+    audioActual.playbackRate = 1.15; // default humano
+}
 
 audioActual.play();
 
