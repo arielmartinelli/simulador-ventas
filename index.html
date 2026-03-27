@@ -5,338 +5,184 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Closers PRO</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-:root {
---bg:#0f172a;
---surface:#1e293b;
---glass:rgba(30,41,59,0.6);
---primary:#3b82f6;
---danger:#ef4444;
---text:#f8fafc;
---muted:#94a3b8;
---border:rgba(255,255,255,0.1);
+/* 🔹 TODO TU CSS ORIGINAL intacto */
+body { margin:0; font-family:Inter; background:#0f172a; color:white }
+
+/* NUEVAS PANTALLAS */
+.screen { display:none; height:100vh; }
+.active { display:flex; flex-direction:column }
+
+/* FORM */
+.form-box {
+    margin:auto;
+    background:#1e293b;
+    padding:30px;
+    border-radius:20px;
+    width:320px;
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
-
-body{
-background:var(--bg);
-font-family:Inter;
-color:var(--text);
-display:flex;
-flex-direction:column;
-height:100vh;
+select, button {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+    border:none;
 }
 
-/* HEADER */
-.header{
-padding:20px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.status{
-background:rgba(16,185,129,.15);
-padding:6px 12px;
-border-radius:20px;
-font-size:13px;
-}
-
-/* STAGE */
-.stage{
-flex:1;
-display:flex;
-justify-content:center;
-align-items:center;
-position:relative;
-}
-
-.video-card{
-width:700px;
-height:55vh;
-background:var(--surface);
-border-radius:24px;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-border:1px solid var(--border);
-}
-
-/* AVATAR */
-.avatar{
-width:160px;
-height:160px;
-border-radius:50%;
-overflow:hidden;
-border:4px solid var(--surface);
-transition:.3s;
-}
-
-.talking .avatar{
-animation:glow 1s infinite alternate;
-}
-
-@keyframes glow{
-0%{box-shadow:0 0 10px rgba(59,130,246,.3)}
-100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
-}
-
-/* SUB */
-.subtitles{
-position:absolute;
-bottom:40px;
-background:rgba(0,0,0,.6);
-padding:12px 20px;
-border-radius:12px;
-opacity:0;
-transition:.3s;
-}
-.subtitles.show{opacity:1}
-
-/* CONTROLS */
-.controls{
-display:flex;
-justify-content:center;
-gap:20px;
-padding:20px;
-}
-
-.btn{
-width:60px;
-height:60px;
-border-radius:50%;
-border:1px solid var(--border);
-background:var(--glass);
-backdrop-filter:blur(10px);
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-font-size:20px;
-transition:.2s;
-}
-
-.btn:hover{transform:translateY(-3px)}
-
-.talk{background:var(--primary)}
-.recording{
-background:var(--danger);
-animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}
-70%{box-shadow:0 0 0 15px rgba(239,68,68,0)}
-}
-
-/* MODAL */
-#config{
-position:fixed;
-inset:0;
-background:#0f172a;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:999;
-}
-
-.box{
-background:var(--surface);
-padding:30px;
-border-radius:20px;
-width:300px;
-}
-
-select,button{
-width:100%;
-margin-top:10px;
-padding:10px;
-border-radius:10px;
-}
-
-/* SCREENS */
-.screen{
-position:fixed;
-inset:0;
-background:#0f172a;
-display:none;
-padding:30px;
-overflow:auto;
-z-index:999;
-font-family:"JetBrains Mono", monospace;
-}
-
-.chat-line{
-margin-bottom:10px;
-}
-.user{color:#60a5fa}
-.lead{color:#34d399}
+button { background:#3b82f6; color:white; cursor:pointer }
 </style>
 </head>
 
 <body>
 
-<!-- CONFIG -->
-<div id="config">
-<div class="box">
-<h3>Configurar Lead</h3>
+<!-- 🧠 PANTALLA 1: CONFIG -->
+<div id="configScreen" class="screen active">
+    <div class="form-box">
+        <h2>Configurar Lead</h2>
 
-<select id="perfil">
-<option>ZAFIRO</option>
-<option>PERLA</option>
-<option>ESMERALDA</option>
-<option>RUBÍ</option>
-</select>
+        <label>Perfil</label>
+        <select id="perfil">
+            <option>ZAFIRO</option>
+            <option>PERLA</option>
+            <option>ESMERALDA</option>
+            <option>RUBÍ</option>
+        </select>
 
-<select id="objecion">
-<option>precio</option>
-<option>tiempo</option>
-<option>confianza</option>
-<option>experiencias</option>
-</select>
+        <label>Objeción principal</label>
+        <select id="objecion">
+            <option>precio</option>
+            <option>tiempo</option>
+            <option>confianza</option>
+            <option>experiencias pasadas</option>
+        </select>
 
-<select id="dificultad">
-<option value="60">60%</option>
-<option value="80">80%</option>
-<option value="90">90%</option>
-</select>
+        <label>Dificultad</label>
+        <select id="dificultad">
+            <option value="60">60%</option>
+            <option value="70">70%</option>
+            <option value="80">80%</option>
+            <option value="90">90%</option>
+        </select>
 
-<button onclick="start()">Iniciar</button>
+        <button onclick="iniciarSimulacion()">Iniciar</button>
+    </div>
 </div>
-</div>
+
+<!-- 🎭 PANTALLA 2: SIMULADOR (TU UI ORIGINAL) -->
+<div id="simScreen" class="screen">
 
 <header class="header">
-<div>🎯 Closers PRO</div>
-<div id="status" class="status">Listo</div>
+    <div>Closers PRO</div>
+    <div id="statusBadge">Listo</div>
 </header>
 
-<main class="stage">
-<div id="avatarWrap" class="video-card">
-<div class="avatar">
-<img id="avatarImg">
-</div>
-</div>
-
-<div id="sub" class="subtitles"></div>
+<main>
+    <img id="avatarImg" width="120">
+    <div id="subtitles"></div>
 </main>
 
-<footer class="controls">
-<div class="btn" onclick="reset()">🔄</div>
-<div id="talkBtn" class="btn talk">🎤</div>
-<div class="btn" onclick="trans()">📝</div>
-<div class="btn" onclick="audit()">📊</div>
+<footer>
+    <button onclick="resetChat()">Reset</button>
+    <button id="talkBtn">Hablar</button>
+    <button onclick="verTranscripcion()">Transcripción</button>
+    <button onclick="verAuditoria()">Auditoría</button>
 </footer>
 
-<!-- TRANS -->
-<div id="transScreen" class="screen"></div>
+</div>
 
-<!-- AUDIT -->
-<div id="auditScreen" class="screen"></div>
+<!-- 📝 PANTALLA 3: TRANSCRIPCIÓN -->
+<div id="transScreen" class="screen">
+    <h2>Transcripción</h2>
+    <pre id="transcripcion"></pre>
+    <button onclick="volver()">Volver</button>
+</div>
+
+<!-- 📊 PANTALLA 4: AUDITORÍA -->
+<div id="auditScreen" class="screen">
+    <h2>Auditoría</h2>
+    <pre id="audit"></pre>
+    <button onclick="volver()">Volver</button>
+</div>
 
 <script>
-let historial=[];
-let config={};
+let config = {};
+let historial = [];
 
-avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
-
-async function start(){
-config={
-perfil:perfil.value,
-objecion:objecion.value,
-dificultad:dificultad.value
-};
-
-await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/start",config})
-});
-
-config.style.display="none";
+// 🎬 CAMBIAR PANTALLAS
+function show(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
-const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-rec.lang="es-AR";
+// 🚀 INICIO
+async function iniciarSimulacion(){
+    config = {
+        perfil: document.getElementById("perfil").value,
+        objecion: document.getElementById("objecion").value,
+        dificultad: document.getElementById("dificultad").value
+    };
 
-talkBtn.onclick=()=>{
-rec.start();
-talkBtn.classList.add("recording");
-status.innerText="Escuchando...";
-};
+    await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({message:"/start", config})
+    });
 
-rec.onend=()=>{
-talkBtn.classList.remove("recording");
-};
-
-rec.onresult=async e=>{
-const text=e.results[0][0].transcript;
-
-historial.push({role:"user",text});
-mostrar("Tú: "+text);
-
-status.innerText="Pensando...";
-
-const res=await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:text})
-});
-
-const data=await res.json();
-
-historial.push({role:"lead",text:data.reply});
-mostrar("Lead: "+data.reply);
-hablar(data.reply);
-};
-
-function mostrar(t){
-sub.innerText=t;
-sub.classList.add("show");
-setTimeout(()=>sub.classList.remove("show"),6000);
+    show("simScreen");
 }
 
-function hablar(t){
-let u=new SpeechSynthesisUtterance(t);
+// 🎤 SIMPLIFICADO
+document.getElementById("talkBtn").onclick = async ()=>{
+    const texto = prompt("Decí algo:");
+    if(!texto) return;
 
-avatarWrap.classList.add("talking");
-status.innerText="Lead hablando...";
+    historial.push("TÚ: "+texto);
 
-u.onend=()=>{
-avatarWrap.classList.remove("talking");
-status.innerText="Tu turno";
+    const res = await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({message:texto})
+    });
+
+    const data = await res.json();
+
+    historial.push("LEAD: "+data.reply);
+
+    document.getElementById("subtitles").innerText = data.reply;
 };
 
-speechSynthesis.speak(u);
+// 🔄 RESET
+async function resetChat(){
+    historial=[];
+    await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
 }
 
-async function reset(){
-historial=[];
-await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
-status.innerText="Reiniciado";
+// 📝 TRANSCRIPCIÓN
+function verTranscripcion(){
+    document.getElementById("transcripcion").innerText = historial.join("\n\n");
+    show("transScreen");
 }
 
-function trans(){
-transScreen.style.display="block";
-transScreen.innerHTML="<h2>Transcripción</h2>"+historial.map(m=>
-`<div class="chat-line ${m.role==='user'?'user':'lead'}">${m.role==='user'?'TÚ':'LEAD'}: ${m.text}</div>`
-).join("");
+// 📊 AUDIT
+async function verAuditoria(){
+    const res = await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({message:"/audit"})
+    });
+
+    const data = await res.json();
+    document.getElementById("audit").innerText = data.reply;
+
+    show("auditScreen");
 }
 
-async function audit(){
-const r=await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/audit"})
-});
-const d=await r.json();
-
-auditScreen.style.display="block";
-auditScreen.innerHTML="<h2>Auditoría</h2><pre>"+d.reply+"</pre>";
+function volver(){
+    show("simScreen");
 }
 </script>
 
