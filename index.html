@@ -3,186 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Closers PRO</title>
+<title>Simulador Closers PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-/* 🔹 TODO TU CSS ORIGINAL intacto */
-body { margin:0; font-family:Inter; background:#0f172a; color:white }
+:root {
+    --bg-dark:#0f172a;
+    --surface:#1e293b;
+    --primary:#3b82f6;
+    --danger:#ef4444;
+    --text:#fff;
+}
+body {
+    margin:0;
+    font-family:Inter;
+    background:var(--bg-dark);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
 
-/* NUEVAS PANTALLAS */
-.screen { display:none; height:100vh; }
-.active { display:flex; flex-direction:column }
+/* HEADER */
+.header {
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+}
 
-/* FORM */
-.form-box {
-    margin:auto;
+/* MAIN */
+.stage {
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.avatar {
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    overflow:hidden;
+}
+
+.avatar img {
+    width:100%;
+}
+
+/* SUBTÍTULOS */
+.subtitles {
+    position:absolute;
+    bottom:60px;
+    background:rgba(0,0,0,.6);
+    padding:10px 20px;
+    border-radius:10px;
+    opacity:0;
+    transition:.3s;
+}
+.subtitles.visible { opacity:1 }
+
+/* CONTROLES */
+.controls {
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    padding:20px;
+}
+
+button {
+    padding:12px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+}
+
+.talk { background:var(--primary) }
+.recording { background:var(--danger) }
+
+/* MODAL */
+#configModal {
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.box {
     background:#1e293b;
     padding:30px;
     border-radius:20px;
-    width:320px;
+    width:300px;
 }
 
-select, button {
+select, .startBtn {
     width:100%;
     margin-top:10px;
     padding:10px;
     border-radius:10px;
-    border:none;
 }
 
-button { background:#3b82f6; color:white; cursor:pointer }
+/* SCREENS */
+.screen {
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    display:none;
+    padding:30px;
+    overflow:auto;
+    z-index:999;
+}
 </style>
 </head>
 
 <body>
 
-<!-- 🧠 PANTALLA 1: CONFIG -->
-<div id="configScreen" class="screen active">
-    <div class="form-box">
-        <h2>Configurar Lead</h2>
+<!-- CONFIG -->
+<div id="configModal">
+<div class="box">
+<h3>Configurar Lead</h3>
 
-        <label>Perfil</label>
-        <select id="perfil">
-            <option>ZAFIRO</option>
-            <option>PERLA</option>
-            <option>ESMERALDA</option>
-            <option>RUBÍ</option>
-        </select>
+<select id="perfil">
+<option>ZAFIRO</option>
+<option>PERLA</option>
+<option>ESMERALDA</option>
+<option>RUBÍ</option>
+</select>
 
-        <label>Objeción principal</label>
-        <select id="objecion">
-            <option>precio</option>
-            <option>tiempo</option>
-            <option>confianza</option>
-            <option>experiencias pasadas</option>
-        </select>
+<select id="objecion">
+<option>precio</option>
+<option>tiempo</option>
+<option>confianza</option>
+<option>experiencias</option>
+</select>
 
-        <label>Dificultad</label>
-        <select id="dificultad">
-            <option value="60">60%</option>
-            <option value="70">70%</option>
-            <option value="80">80%</option>
-            <option value="90">90%</option>
-        </select>
+<select id="dificultad">
+<option value="60">60%</option>
+<option value="70">70%</option>
+<option value="80">80%</option>
+<option value="90">90%</option>
+</select>
 
-        <button onclick="iniciarSimulacion()">Iniciar</button>
-    </div>
+<button class="startBtn" onclick="iniciar()">Iniciar</button>
 </div>
-
-<!-- 🎭 PANTALLA 2: SIMULADOR (TU UI ORIGINAL) -->
-<div id="simScreen" class="screen">
+</div>
 
 <header class="header">
-    <div>Closers PRO</div>
-    <div id="statusBadge">Listo</div>
+<div>Closers PRO</div>
+<div id="status">Listo</div>
 </header>
 
-<main>
-    <img id="avatarImg" width="120">
-    <div id="subtitles"></div>
+<main class="stage">
+<div class="avatar">
+<img id="avatarImg">
+</div>
+
+<div id="subtitles" class="subtitles"></div>
 </main>
 
-<footer>
-    <button onclick="resetChat()">Reset</button>
-    <button id="talkBtn">Hablar</button>
-    <button onclick="verTranscripcion()">Transcripción</button>
-    <button onclick="verAuditoria()">Auditoría</button>
+<footer class="controls">
+<button onclick="reset()">🔄</button>
+<button id="talkBtn" class="talk">🎤</button>
+<button onclick="verTrans()">📝</button>
+<button onclick="auditar()">📊</button>
 </footer>
 
-</div>
-
-<!-- 📝 PANTALLA 3: TRANSCRIPCIÓN -->
+<!-- TRANS -->
 <div id="transScreen" class="screen">
-    <h2>Transcripción</h2>
-    <pre id="transcripcion"></pre>
-    <button onclick="volver()">Volver</button>
+<h2>Transcripción</h2>
+<pre id="trans"></pre>
+<button onclick="cerrar('transScreen')">Volver</button>
 </div>
 
-<!-- 📊 PANTALLA 4: AUDITORÍA -->
+<!-- AUDIT -->
 <div id="auditScreen" class="screen">
-    <h2>Auditoría</h2>
-    <pre id="audit"></pre>
-    <button onclick="volver()">Volver</button>
+<h2>Auditoría</h2>
+<pre id="audit"></pre>
+<button onclick="cerrar('auditScreen')">Volver</button>
 </div>
 
 <script>
 let config = {};
 let historial = [];
 
-// 🎬 CAMBIAR PANTALLAS
-function show(id){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
+// avatar random
+document.getElementById("avatarImg").src =
+`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-// 🚀 INICIO
-async function iniciarSimulacion(){
-    config = {
-        perfil: document.getElementById("perfil").value,
-        objecion: document.getElementById("objecion").value,
-        dificultad: document.getElementById("dificultad").value
-    };
-
-    await fetch("/api/chat",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:"/start", config})
-    });
-
-    show("simScreen");
-}
-
-// 🎤 SIMPLIFICADO
-document.getElementById("talkBtn").onclick = async ()=>{
-    const texto = prompt("Decí algo:");
-    if(!texto) return;
-
-    historial.push("TÚ: "+texto);
-
-    const res = await fetch("/api/chat",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:texto})
-    });
-
-    const data = await res.json();
-
-    historial.push("LEAD: "+data.reply);
-
-    document.getElementById("subtitles").innerText = data.reply;
+// iniciar
+async function iniciar(){
+config = {
+perfil:perfil.value,
+objecion:objecion.value,
+dificultad:dificultad.value
 };
 
-// 🔄 RESET
-async function resetChat(){
-    historial=[];
-    await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
+await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:"/start", config})
+});
+
+configModal.style.display="none";
 }
 
-// 📝 TRANSCRIPCIÓN
-function verTranscripcion(){
-    document.getElementById("transcripcion").innerText = historial.join("\n\n");
-    show("transScreen");
+// voz
+const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+rec.lang="es-AR";
+
+talkBtn.onclick=()=>rec.start();
+
+rec.onresult=async e=>{
+const text = e.results[0][0].transcript;
+
+historial.push("TÚ: "+text);
+mostrar("Tú: "+text);
+
+const res = await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:text})
+});
+
+const data = await res.json();
+
+historial.push("LEAD: "+data.reply);
+mostrar("Lead: "+data.reply);
+hablar(data.reply);
+};
+
+// subtitulo
+function mostrar(t){
+subtitles.innerText=t;
+subtitles.classList.add("visible");
+setTimeout(()=>subtitles.classList.remove("visible"),5000);
 }
 
-// 📊 AUDIT
-async function verAuditoria(){
-    const res = await fetch("/api/chat",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:"/audit"})
-    });
-
-    const data = await res.json();
-    document.getElementById("audit").innerText = data.reply;
-
-    show("auditScreen");
+// voz
+function hablar(t){
+let u=new SpeechSynthesisUtterance(t);
+speechSynthesis.speak(u);
 }
 
-function volver(){
-    show("simScreen");
+// reset
+async function reset(){
+historial=[];
+await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
+}
+
+// trans
+function verTrans(){
+trans.innerText=historial.join("\n\n");
+transScreen.style.display="block";
+}
+
+// audit
+async function auditar(){
+const r=await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:"/audit"})
+});
+const d=await r.json();
+audit.innerText=d.reply;
+auditScreen.style.display="block";
+}
+
+function cerrar(id){
+document.getElementById(id).style.display="none";
 }
 </script>
 
