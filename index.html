@@ -3,127 +3,229 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador Closers PRO</title>
+<title>Closers PRO</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
 :root {
-    --bg-dark:#0f172a;
-    --surface:#1e293b;
-    --primary:#3b82f6;
-    --danger:#ef4444;
-    --text:#fff;
+--bg:#0f172a;
+--surface:#1e293b;
+--glass:rgba(30,41,59,0.6);
+--primary:#3b82f6;
+--danger:#ef4444;
+--text:#f8fafc;
+--muted:#94a3b8;
+--border:rgba(255,255,255,0.1);
 }
-body {
-    margin:0;
-    font-family:Inter;
-    background:var(--bg-dark);
-    color:var(--text);
-    display:flex;
-    flex-direction:column;
-    height:100vh;
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+background:var(--bg);
+font-family:Inter;
+color:var(--text);
+display:flex;
+flex-direction:column;
+height:100vh;
 }
 
 /* HEADER */
-.header {
-    padding:20px;
-    display:flex;
-    justify-content:space-between;
+.header{
+padding:20px 30px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-/* MAIN */
-.stage {
-    flex:1;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+.status{
+background:rgba(16,185,129,.15);
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
 }
 
+/* STAGE */
+.stage{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+position:relative;
+}
+
+.video-card {
+    width: 100%;
+    max-width: 720px;
+    height: 60vh;
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+
+/* AVATAR */
 .avatar {
-    width:160px;
-    height:160px;
-    border-radius:50%;
-    overflow:hidden;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
 }
 
-.avatar img {
-    width:100%;
+/* EFECTO CUANDO HABLA */
+.talking .avatar {
+    animation: glowSpeak 1s infinite alternate;
 }
 
-/* SUBTÍTULOS */
-.subtitles {
-    position:absolute;
-    bottom:60px;
-    background:rgba(0,0,0,.6);
-    padding:10px 20px;
-    border-radius:10px;
-    opacity:0;
-    transition:.3s;
-}
-.subtitles.visible { opacity:1 }
-
-/* CONTROLES */
-.controls {
-    display:flex;
-    justify-content:center;
-    gap:20px;
-    padding:20px;
+@keyframes glowSpeak {
+    0% {
+        box-shadow: 0 0 10px rgba(59,130,246,0.2);
+    }
+    100% {
+        box-shadow: 0 0 40px rgba(59,130,246,0.9),
+                    0 0 80px rgba(59,130,246,0.4);
+    }
 }
 
-button {
-    padding:12px;
-    border-radius:50%;
-    border:none;
-    cursor:pointer;
+.lead-name {
+    margin-top: 16px;
+    font-size: 0.95rem;
+    color: #cbd5f5;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.8;
 }
 
-.talk { background:var(--primary) }
-.recording { background:var(--danger) }
+/* SUB */
+.subtitles{
+position:absolute;
+bottom:40px;
+background:rgba(0,0,0,.6);
+padding:12px 20px;
+border-radius:12px;
+opacity:0;
+transition:.3s;
+}
+.subtitles.show{opacity:1}
+
+/* CONTROLS */
+.controls{
+display:flex;
+justify-content:center;
+gap:20px;
+padding:20px;
+}
+
+.btn-control {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(30,41,59,0.6);
+    backdrop-filter: blur(12px);
+    color: white;
+    font-size: 1.4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-control:hover {
+    transform: translateY(-4px) scale(1.05);
+    background: #1e293b;
+}
+
+.btn-talk {
+    background: #3b82f6;
+    width: 64px;
+    height: 64px;
+    font-size: 1.8rem;
+}
+
+.btn-talk.recording {
+    background: #ef4444;
+    animation: pulseRec 1.4s infinite;
+}
+
+@keyframes pulseRec {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+    70% { box-shadow: 0 0 0 18px rgba(239,68,68,0); }
+}
+
+.status-badge {
+    background: rgba(16,185,129,0.15);
+    color: #10b981;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.listening {
+    background: rgba(239,68,68,0.15);
+    color: #ef4444;
+}
 
 /* MODAL */
-#configModal {
-    position:fixed;
-    inset:0;
-    background:#0f172a;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:999;
+#config{
+position:fixed;
+inset:0;
+background:#0f172a;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:999;
 }
 
-.box {
-    background:#1e293b;
-    padding:30px;
-    border-radius:20px;
-    width:300px;
+.box{
+background:var(--surface);
+padding:30px;
+border-radius:20px;
+width:300px;
 }
 
-select, .startBtn {
-    width:100%;
-    margin-top:10px;
-    padding:10px;
-    border-radius:10px;
+select,button{
+width:100%;
+margin-top:10px;
+padding:10px;
+border-radius:10px;
 }
 
 /* SCREENS */
-.screen {
-    position:fixed;
-    inset:0;
-    background:#0f172a;
-    display:none;
-    padding:30px;
-    overflow:auto;
-    z-index:999;
+.screen{
+position:fixed;
+inset:0;
+background:#0f172a;
+display:none;
+padding:30px;
+overflow:auto;
+z-index:999;
+font-family:"JetBrains Mono", monospace;
 }
+
+.chat-line{
+margin-bottom:10px;
+}
+.user{color:#60a5fa}
+.lead{color:#34d399}
 </style>
 </head>
 
 <body>
 
 <!-- CONFIG -->
-<div id="configModal">
+<div id="config">
 <div class="box">
 <h3>Configurar Lead</h3>
 
@@ -143,60 +245,53 @@ select, .startBtn {
 
 <select id="dificultad">
 <option value="60">60%</option>
-<option value="70">70%</option>
 <option value="80">80%</option>
 <option value="90">90%</option>
 </select>
 
-<button class="startBtn" onclick="iniciar()">Iniciar</button>
+<button onclick="start()">Iniciar</button>
 </div>
 </div>
 
 <header class="header">
-<div>Closers PRO</div>
-<div id="status">Listo</div>
+<div>🎯 Closers PRO</div>
+<div id="status" class="status">Listo</div>
 </header>
 
 <main class="stage">
+<div id="avatarWrap" class="video-card">
 <div class="avatar">
+    <div class="lead-name">
+    <i class="ph-fill ph-user-circle"></i> Lead LATAM
+</div>
 <img id="avatarImg">
 </div>
+</div>
 
-<div id="subtitles" class="subtitles"></div>
+<div id="sub" class="subtitles"></div>
 </main>
 
 <footer class="controls">
-<button onclick="reset()">🔄</button>
-<button id="talkBtn" class="talk">🎤</button>
-<button onclick="verTrans()">📝</button>
-<button onclick="auditar()">📊</button>
+<div class="btn" onclick="reset()">🔄</div>
+<div id="talkBtn" class="btn talk">🎤</div>
+<div class="btn" onclick="trans()">📝</div>
+<div class="btn" onclick="audit()">📊</div>
 </footer>
 
 <!-- TRANS -->
-<div id="transScreen" class="screen">
-<h2>Transcripción</h2>
-<pre id="trans"></pre>
-<button onclick="cerrar('transScreen')">Volver</button>
-</div>
+<div id="transScreen" class="screen"></div>
 
 <!-- AUDIT -->
-<div id="auditScreen" class="screen">
-<h2>Auditoría</h2>
-<pre id="audit"></pre>
-<button onclick="cerrar('auditScreen')">Volver</button>
-</div>
+<div id="auditScreen" class="screen"></div>
 
 <script>
-let config = {};
-let historial = [];
+let historial=[];
+let config={};
 
-// avatar random
-document.getElementById("avatarImg").src =
-`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
+avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-// iniciar
-async function iniciar(){
-config = {
+async function start(){
+config={
 perfil:perfil.value,
 objecion:objecion.value,
 dificultad:dificultad.value
@@ -205,76 +300,89 @@ dificultad:dificultad.value
 await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/start", config})
+body:JSON.stringify({message:"/start",config})
 });
 
-configModal.style.display="none";
+config.style.display="none";
 }
 
-// voz
-const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
 rec.lang="es-AR";
 
-talkBtn.onclick=()=>rec.start();
+talkBtn.onclick=()=>{
+rec.start();
+talkBtn.classList.add("recording");
+status.innerText="Escuchando...";
+};
+
+rec.onend=()=>{
+talkBtn.classList.remove("recording");
+};
 
 rec.onresult=async e=>{
-const text = e.results[0][0].transcript;
+const text=e.results[0][0].transcript;
 
-historial.push("TÚ: "+text);
+historial.push({role:"user",text});
 mostrar("Tú: "+text);
 
-const res = await fetch("/api/chat",{
+status.innerText="Pensando...";
+
+const res=await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:text})
 });
 
-const data = await res.json();
+const data=await res.json();
 
-historial.push("LEAD: "+data.reply);
+historial.push({role:"lead",text:data.reply});
 mostrar("Lead: "+data.reply);
 hablar(data.reply);
 };
 
-// subtitulo
 function mostrar(t){
-subtitles.innerText=t;
-subtitles.classList.add("visible");
-setTimeout(()=>subtitles.classList.remove("visible"),5000);
+sub.innerText=t;
+sub.classList.add("show");
+setTimeout(()=>sub.classList.remove("show"),6000);
 }
 
-// voz
 function hablar(t){
 let u=new SpeechSynthesisUtterance(t);
+
+avatarWrap.classList.add("talking");
+status.innerText="Lead hablando...";
+
+u.onend=()=>{
+avatarWrap.classList.remove("talking");
+status.innerText="Tu turno";
+};
+
 speechSynthesis.speak(u);
 }
 
-// reset
 async function reset(){
 historial=[];
 await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
+status.innerText="Reiniciado";
 }
 
-// trans
-function verTrans(){
-trans.innerText=historial.join("\n\n");
+function trans(){
 transScreen.style.display="block";
+transScreen.innerHTML="<h2>Transcripción</h2>"+historial.map(m=>
+`<div class="chat-line ${m.role==='user'?'user':'lead'}">${m.role==='user'?'TÚ':'LEAD'}: ${m.text}</div>`
+).join("");
 }
 
-// audit
-async function auditar(){
+async function audit(){
 const r=await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:"/audit"})
 });
 const d=await r.json();
-audit.innerText=d.reply;
-auditScreen.style.display="block";
-}
 
-function cerrar(id){
-document.getElementById(id).style.display="none";
+auditScreen.style.display="block";
+auditScreen.innerHTML="<h2>Auditoría</h2><pre>"+d.reply+"</pre>";
 }
 </script>
 
