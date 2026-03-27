@@ -4,19 +4,12 @@
 <meta charset="UTF-8">
 <title>IA Role Play</title>
 
-<!-- 🔥 OPEN GRAPH (WhatsApp, LinkedIn, etc.) -->
 <meta property="og:title" content="Closers PRO - Simulador de Ventas con IA">
 <meta property="og:description" content="Entrená cierres reales con clientes que dudan, objetan y reaccionan como en la vida real.">
 <meta property="og:image" content="https://i.postimg.cc/6qwyysSQ/f0a92198-9225-46d9-b267-c958ff5b87c7-(1).png">
-<meta property="og:url" content="https://tudominio.com">
 <meta property="og:type" content="website">
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://i.postimg.cc/6qwyysSQ/f0a92198-9225-46d9-b267-c958ff5b87c7-(1).png">
-
-<link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
-<link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
-<link rel="apple-touch-icon" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -32,21 +25,18 @@ flex-direction:column;
 height:100vh;
 }
 
-/* HEADER */
 .header{
 padding:20px;
 display:flex;
 justify-content:space-between;
 }
 
-/* STAGE */
 .stage{
 flex:1;
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-position:relative;
 }
 
 .video-card{
@@ -59,7 +49,6 @@ justify-content:center;
 align-items:center;
 }
 
-/* AVATAR */
 .avatar{
 width:140px;
 height:140px;
@@ -76,11 +65,10 @@ animation:glow 1s infinite alternate;
 100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
 }
 
-/* CONTROLES (MEET STYLE ORIGINAL) */
+/* BOTONES */
 .controls {
 display:flex;
 justify-content:center;
-align-items:center;
 gap:18px;
 padding:30px;
 }
@@ -111,7 +99,8 @@ background:#3b82f6;
 font-size:22px;
 }
 
-.recording{
+/* 🔥 ESTADO ACTIVO */
+.btn-talk.active{
 background:#ef4444;
 animation:pulse 1.4s infinite;
 }
@@ -203,6 +192,7 @@ let historial = [];
 let escuchando = false;
 let hablandoIA = false;
 let leadGenero = "hombre";
+let audioActual = null;
 
 avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
@@ -221,22 +211,43 @@ leadGenero = data.genero;
 }
 generarLead();
 
-// VOZ CONTINUA
+// 🎤 RECONOCIMIENTO
 const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 rec.lang="es-AR";
 rec.continuous=true;
 
+// 🔥 BOTÓN DINÁMICO
+function actualizarBoton(){
+if(escuchando){
+talkBtn.classList.add("active");
+micIcon.classList.replace("ph-microphone","ph-stop");
+}else{
+talkBtn.classList.remove("active");
+micIcon.classList.replace("ph-stop","ph-microphone");
+}
+}
+
 function toggleLive(){
+
 if(!escuchando){
 rec.start();
 escuchando=true;
 status.innerText="Escuchando...";
 }else{
 rec.stop();
+audioActual?.pause();
 escuchando=false;
 status.innerText="Pausado";
 }
+
+actualizarBoton();
 }
+
+// 🔥 SI SE CORTA SOLO
+rec.onend = ()=>{
+escuchando=false;
+actualizarBoton();
+};
 
 rec.onresult = async (e) => {
 
@@ -263,8 +274,6 @@ historial.push({role:"lead",text:data.reply});
 hablarIA(data.reply, data.emocion);
 };
 
-let audioActual = null;
-
 async function hablarIA(texto, emocion){
 
 hablandoIA = true;
@@ -284,19 +293,10 @@ const data = await res.json();
 
 audioActual = new Audio("data:audio/mp3;base64," + data.audio);
 
-// emoción → velocidad
-if(emocion==="enojo"){
-    audioActual.playbackRate = 1.2; // habla más rápido
-}
-else if(emocion==="duda"){
-    audioActual.playbackRate = 1.1; // habla más lento
-}
-else if(emocion==="interes"){
-    audioActual.playbackRate = 1.1;
-}
-else{
-    audioActual.playbackRate = 1.15; // default humano
-}
+// velocidad humana
+if(emocion==="enojo") audioActual.playbackRate = 1.15;
+else if(emocion==="duda") audioActual.playbackRate = 0.85;
+else audioActual.playbackRate = 1;
 
 audioActual.play();
 
@@ -313,8 +313,8 @@ await generarLead();
 
 // TRANS
 function abrirTrans(){
-document.getElementById("transScreen").style.display="block";
-document.getElementById("transContent").innerHTML=
+transScreen.style.display="block";
+transContent.innerHTML=
 historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
 }
 
@@ -327,8 +327,8 @@ body:JSON.stringify({message:"/audit"})
 });
 const d=await r.json();
 
-document.getElementById("auditScreen").style.display="block";
-document.getElementById("auditContent").innerText=d.reply;
+auditScreen.style.display="block";
+auditContent.innerText=d.reply;
 }
 
 function cerrar(id){
