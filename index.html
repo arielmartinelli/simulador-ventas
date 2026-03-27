@@ -8,56 +8,28 @@
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-:root{
---bg:#0f172a;
---surface:#1e293b;
---primary:#3b82f6;
---danger:#ef4444;
---text:#f8fafc;
---muted:#94a3b8;
-}
-
 body{
 margin:0;
 font-family:Inter;
-background:var(--bg);
-color:var(--text);
+background:#0f172a;
+color:white;
 display:flex;
 flex-direction:column;
 height:100vh;
 }
 
-/* HEADER */
 .header{
 padding:20px;
 display:flex;
 justify-content:space-between;
 }
 
-/* LEAD INFO */
-.lead-card{
-text-align:center;
-margin-bottom:10px;
-}
-
-.lead-name{
-font-size:18px;
-font-weight:600;
-}
-
-.lead-desc{
-font-size:13px;
-color:var(--muted);
-margin-top:5px;
-}
-
-/* STAGE */
 .stage{
 flex:1;
 display:flex;
-justify-content:center;
-align-items:center;
 flex-direction:column;
+align-items:center;
+justify-content:center;
 position:relative;
 }
 
@@ -71,7 +43,6 @@ justify-content:center;
 align-items:center;
 }
 
-/* AVATAR */
 .avatar{
 width:140px;
 height:140px;
@@ -88,19 +59,6 @@ animation:glow 1s infinite alternate;
 100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
 }
 
-/* SUB */
-.sub{
-position:absolute;
-bottom:40px;
-background:rgba(0,0,0,.6);
-padding:10px 20px;
-border-radius:10px;
-opacity:0;
-transition:.3s;
-}
-.show{opacity:1}
-
-/* CONTROLS */
 .controls{
 display:flex;
 justify-content:center;
@@ -112,23 +70,21 @@ padding:30px;
 width:48px;
 height:48px;
 border-radius:50%;
-background:rgba(30,41,59,0.8);
+background:#1e293b;
 display:flex;
 align-items:center;
 justify-content:center;
 cursor:pointer;
-color:white;
 }
 
 .btn-talk{
 width:64px;
 height:64px;
-background:var(--primary);
-font-size:22px;
+background:#3b82f6;
 }
 
 .recording{
-background:var(--danger);
+background:#ef4444;
 animation:pulse 1.4s infinite;
 }
 
@@ -137,7 +93,6 @@ animation:pulse 1.4s infinite;
 70%{box-shadow:0 0 0 18px rgba(239,68,68,0)}
 }
 
-/* SCREENS */
 .screen{
 position:fixed;
 inset:0;
@@ -146,15 +101,6 @@ display:none;
 padding:30px;
 overflow:auto;
 font-family:"JetBrains Mono";
-}
-
-.close{
-margin-top:20px;
-padding:10px;
-background:#1e293b;
-border:none;
-color:white;
-cursor:pointer;
 }
 </style>
 </head>
@@ -168,10 +114,8 @@ cursor:pointer;
 
 <main class="stage">
 
-<div class="lead-card">
-<div id="leadName" class="lead-name"></div>
-<div id="leadDesc" class="lead-desc"></div>
-</div>
+<div id="leadName"></div>
+<div id="leadDesc"></div>
 
 <div id="avatarWrap" class="video-card">
 <div class="avatar">
@@ -179,120 +123,96 @@ cursor:pointer;
 </div>
 </div>
 
-<div id="sub" class="sub"></div>
-
 </main>
 
 <footer class="controls">
-
-<div class="btn" onclick="reset()">
-<i class="ph ph-arrow-counter-clockwise"></i>
-</div>
-
-<div id="talkBtn" class="btn btn-talk">
-<i id="micIcon" class="ph-fill ph-microphone"></i>
-</div>
-
-<div class="btn" onclick="pausar()">
-<i class="ph ph-pause"></i>
-</div>
-
-<div class="btn" onclick="abrirTrans()">
-<i class="ph ph-text-align-left"></i>
-</div>
-
-<div class="btn" onclick="abrirAudit()">
-<i class="ph ph-chart-line-up"></i>
-</div>
-
+<div class="btn" onclick="reset()">🔄</div>
+<div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">🎤</div>
+<div class="btn" onclick="abrirTrans()">📝</div>
+<div class="btn" onclick="abrirAudit()">📊</div>
 </footer>
 
-<!-- TRANSCRIPCIÓN -->
-<div id="transScreen" class="screen">
-<h2>Transcripción</h2>
-<div id="transContent"></div>
-<button class="close" onclick="cerrar('transScreen')">Volver</button>
-</div>
-
-<!-- AUDITORÍA -->
-<div id="auditScreen" class="screen">
-<h2>Auditoría</h2>
-<pre id="auditContent"></pre>
-<button class="close" onclick="cerrar('auditScreen')">Volver</button>
-</div>
+<div id="transScreen" class="screen"></div>
+<div id="auditScreen" class="screen"></div>
 
 <script>
-let historial=[];
+let historial = [];
+let escuchando = false;
+let hablandoIA = false;
 
 avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-// generar lead
+// LEAD
 async function generarLead(){
-const res=await fetch("/api/chat",{
+const res = await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:"/start"})
 });
-const data=await res.json();
+const data = await res.json();
 
-leadName.innerText=data.name;
-leadDesc.innerText=data.desc;
+leadName.innerText = data.name;
+leadDesc.innerText = data.desc;
 }
 
 generarLead();
 
-// voz
-const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+// VOZ CONTINUA
+const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 rec.lang="es-AR";
+rec.continuous=true;
 
-talkBtn.onclick=()=>{
+function toggleLive(){
+if(!escuchando){
 rec.start();
-talkBtn.classList.add("recording");
-micIcon.classList.replace("ph-microphone","ph-stop");
+escuchando=true;
 status.innerText="Escuchando...";
-};
+}else{
+rec.stop();
+speechSynthesis.cancel();
+escuchando=false;
+status.innerText="Pausado";
+}
+}
 
-rec.onend=()=>{
-talkBtn.classList.remove("recording");
-micIcon.classList.replace("ph-stop","ph-microphone");
-};
+rec.onresult = async (e) => {
 
-rec.onresult=async e=>{
-const text=e.results[0][0].transcript;
+const text = e.results[e.results.length-1][0].transcript;
+
+if(hablandoIA){
+speechSynthesis.cancel();
+avatarWrap.classList.remove("talking");
+hablandoIA=false;
+}
 
 historial.push({role:"user",text});
-mostrar("Tú: "+text);
 
-status.innerText="Pensando...";
-
-const res=await fetch("/api/chat",{
+const res = await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:text})
 });
 
-const data=await res.json();
+const data = await res.json();
 
 historial.push({role:"lead",text:data.reply});
-mostrar("Lead: "+data.reply);
-hablar(data.reply);
+
+hablarIA(data.reply, data.emocion);
 };
 
-function mostrar(t){
-sub.innerText=t;
-sub.classList.add("show");
-setTimeout(()=>sub.classList.remove("show"),5000);
-}
+function hablarIA(texto, emocion){
 
-function hablar(t){
-let u=new SpeechSynthesisUtterance(t);
+let u = new SpeechSynthesisUtterance(texto);
+hablandoIA=true;
+
+if(emocion==="enojo"){u.rate=1.1;u.pitch=0.8;}
+if(emocion==="duda"){u.rate=0.9;u.pitch=1.1;}
 
 avatarWrap.classList.add("talking");
-status.innerText="Lead hablando...";
 
 u.onend=()=>{
 avatarWrap.classList.remove("talking");
-status.innerText="Tu turno";
+hablandoIA=false;
 };
 
 speechSynthesis.speak(u);
@@ -301,38 +221,19 @@ speechSynthesis.speak(u);
 async function reset(){
 historial=[];
 await generarLead();
-status.innerText="Nuevo lead";
 }
 
-function pausar(){
-speechSynthesis.cancel();
-avatarWrap.classList.remove("talking");
-status.innerText="Pausado";
-}
-
-// TRANS
 function abrirTrans(){
-document.getElementById("transScreen").style.display="block";
-document.getElementById("transContent").innerHTML=
-historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
+transScreen.style.display="block";
+transScreen.innerHTML=historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
 }
 
-// AUDIT
 async function abrirAudit(){
-const r=await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/audit"})
-});
+const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"/audit"})});
 const d=await r.json();
 
-document.getElementById("auditScreen").style.display="block";
-document.getElementById("auditContent").innerText=d.reply;
-}
-
-// cerrar
-function cerrar(id){
-document.getElementById(id).style.display="none";
+auditScreen.style.display="block";
+auditScreen.innerHTML="<pre>"+d.reply+"</pre>";
 }
 </script>
 
