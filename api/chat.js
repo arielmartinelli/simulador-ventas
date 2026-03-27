@@ -10,7 +10,9 @@ const r = a => a[Math.floor(Math.random() * a.length)];
 
 function generarLead(){
 
-const nombres = ["Juan","Carlos","Martina","Sofía","Lucas"];
+const nombresHombre = ["Juan","Carlos","Lucas"];
+const nombresMujer = ["Martina","Sofía"];
+
 const paises = ["Argentina","México","Colombia","Chile","Perú"];
 const profesiones = ["empleado","freelancer","estudiante","emprendedor"];
 const perfiles = ["ZAFIRO","PERLA","ESMERALDA","RUBÍ"];
@@ -31,13 +33,15 @@ const historias = [
 "Siempre quiso aprender pero lo deja"
 ];
 
+const esMujer = Math.random() > 0.5;
+
 const perfil = r(perfiles);
 const pais = r(paises);
 const profesion = r(profesiones);
 const historia = r(historias);
 const dolor = r(dolores);
 
-// historia oculta (clave)
+// historia oculta
 const evento = r([
 "perdí un trabajo por no hablar inglés",
 "no pude cerrar un cliente importante",
@@ -53,10 +57,12 @@ const deseo = r([
 ]);
 
 leadPublic = {
-    name: r(nombres),
+    name: esMujer ? r(nombresMujer) : r(nombresHombre),
+    genero: esMujer ? "mujer" : "hombre",
     desc: `${profesion} de ${pais} • Quiere aprender inglés para progresar • Problema: ${dolor}`
 };
 
+// 🔥 TU PROMPT ORIGINAL — INTACTO
 identidad = `
 Eres un LEAD real en una llamada de cierre.
 
@@ -136,7 +142,7 @@ IMPORTANTE
 `;
 }
 
-// emoción simple
+// emoción
 function detectarEmocion(texto){
 texto = texto.toLowerCase();
 
@@ -149,7 +155,7 @@ return "neutral";
 
 export default async function handler(req,res){
 
-const body = typeof req.body === "string" ? JSON.parse(body = req.body) : req.body;
+const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 const msg = body.message;
 
 // START
@@ -160,7 +166,8 @@ generarLead();
 return res.json({
 reply: "Arranca",
 name: leadPublic.name,
-desc: leadPublic.desc
+desc: leadPublic.desc,
+genero: leadPublic.genero // 🔥 NUEVO
 });
 }
 
@@ -168,6 +175,27 @@ desc: leadPublic.desc
 if(msg === "/reset"){
 historial = [];
 return res.json({reply:"reset"});
+}
+
+// 🔥 VOZ (NUEVO — NO ROMPE NADA)
+if(msg === "/voice"){
+
+const texto = body.text;
+const genero = body.genero;
+
+const voice = genero === "mujer" ? "nova" : "alloy";
+
+const audio = await openai.audio.speech.create({
+model: "gpt-4o-mini-tts",
+voice: voice,
+input: texto
+});
+
+const buffer = Buffer.from(await audio.arrayBuffer());
+
+return res.json({
+audio: buffer.toString("base64")
+});
 }
 
 // AUDIT
@@ -202,7 +230,6 @@ return res.json({reply:rta.output[0].content[0].text});
 // CHAT
 historial.push({role:"user",content:msg});
 
-// limitar memoria
 if(historial.length > 12){
     historial = historial.slice(-12);
 }

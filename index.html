@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Closers PRO</title>
+<title>IA Role Play</title>
 
 <!-- 🔥 OPEN GRAPH (WhatsApp, LinkedIn, etc.) -->
 <meta property="og:title" content="Closers PRO - Simulador de Ventas con IA">
@@ -202,6 +202,7 @@ cursor:pointer;
 let historial = [];
 let escuchando = false;
 let hablandoIA = false;
+let leadGenero = "hombre";
 
 avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
@@ -216,6 +217,7 @@ const data = await res.json();
 
 leadName.innerText = data.name;
 leadDesc.innerText = data.desc;
+leadGenero = data.genero;
 }
 generarLead();
 
@@ -231,7 +233,6 @@ escuchando=true;
 status.innerText="Escuchando...";
 }else{
 rec.stop();
-speechSynthesis.cancel();
 escuchando=false;
 status.innerText="Pausado";
 }
@@ -242,7 +243,7 @@ rec.onresult = async (e) => {
 const text = e.results[e.results.length-1][0].transcript;
 
 if(hablandoIA){
-speechSynthesis.cancel();
+audioActual?.pause();
 avatarWrap.classList.remove("talking");
 hablandoIA=false;
 }
@@ -262,22 +263,37 @@ historial.push({role:"lead",text:data.reply});
 hablarIA(data.reply, data.emocion);
 };
 
-function hablarIA(texto, emocion){
+let audioActual = null;
 
-let u = new SpeechSynthesisUtterance(texto);
-hablandoIA=true;
+async function hablarIA(texto, emocion){
 
-if(emocion==="enojo"){u.rate=1.1;u.pitch=0.8;}
-if(emocion==="duda"){u.rate=0.9;u.pitch=1.1;}
-
+hablandoIA = true;
 avatarWrap.classList.add("talking");
 
-u.onend=()=>{
-avatarWrap.classList.remove("talking");
-hablandoIA=false;
-};
+const res = await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+message:"/voice",
+text:texto,
+genero:leadGenero
+})
+});
 
-speechSynthesis.speak(u);
+const data = await res.json();
+
+audioActual = new Audio("data:audio/mp3;base64," + data.audio);
+
+// emoción → velocidad
+if(emocion==="enojo") audioActual.playbackRate = 1.1;
+if(emocion==="duda") audioActual.playbackRate = 0.9;
+
+audioActual.play();
+
+audioActual.onended = ()=>{
+avatarWrap.classList.remove("talking");
+hablandoIA = false;
+};
 }
 
 async function reset(){
@@ -305,7 +321,6 @@ document.getElementById("auditScreen").style.display="block";
 document.getElementById("auditContent").innerText=d.reply;
 }
 
-// 🔥 FIX VOLVER (CLAVE)
 function cerrar(id){
 document.getElementById(id).style.display="none";
 }
