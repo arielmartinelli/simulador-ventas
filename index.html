@@ -18,12 +18,14 @@ flex-direction:column;
 height:100vh;
 }
 
+/* HEADER */
 .header{
 padding:20px;
 display:flex;
 justify-content:space-between;
 }
 
+/* STAGE */
 .stage{
 flex:1;
 display:flex;
@@ -43,6 +45,7 @@ justify-content:center;
 align-items:center;
 }
 
+/* AVATAR */
 .avatar{
 width:140px;
 height:140px;
@@ -59,28 +62,39 @@ animation:glow 1s infinite alternate;
 100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
 }
 
-.controls{
+/* CONTROLES (MEET STYLE ORIGINAL) */
+.controls {
 display:flex;
 justify-content:center;
+align-items:center;
 gap:18px;
 padding:30px;
 }
 
-.btn{
+.btn {
 width:48px;
 height:48px;
 border-radius:50%;
-background:#1e293b;
+background:rgba(30,41,59,0.8);
+border:1px solid rgba(255,255,255,0.08);
 display:flex;
 align-items:center;
 justify-content:center;
 cursor:pointer;
+color:white;
+font-size:18px;
+transition:.2s;
+}
+
+.btn:hover{
+transform:scale(1.08);
 }
 
 .btn-talk{
 width:64px;
 height:64px;
 background:#3b82f6;
+font-size:22px;
 }
 
 .recording{
@@ -93,6 +107,7 @@ animation:pulse 1.4s infinite;
 70%{box-shadow:0 0 0 18px rgba(239,68,68,0)}
 }
 
+/* SCREENS */
 .screen{
 position:fixed;
 inset:0;
@@ -101,6 +116,16 @@ display:none;
 padding:30px;
 overflow:auto;
 font-family:"JetBrains Mono";
+z-index:999;
+}
+
+.close{
+margin-top:20px;
+padding:10px;
+background:#1e293b;
+border:none;
+color:white;
+cursor:pointer;
 }
 </style>
 </head>
@@ -126,14 +151,38 @@ font-family:"JetBrains Mono";
 </main>
 
 <footer class="controls">
-<div class="btn" onclick="reset()">🔄</div>
-<div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">🎤</div>
-<div class="btn" onclick="abrirTrans()">📝</div>
-<div class="btn" onclick="abrirAudit()">📊</div>
+
+<div class="btn" onclick="reset()">
+<i class="ph ph-arrow-counter-clockwise"></i>
+</div>
+
+<div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">
+<i id="micIcon" class="ph-fill ph-microphone"></i>
+</div>
+
+<div class="btn" onclick="abrirTrans()">
+<i class="ph ph-text-align-left"></i>
+</div>
+
+<div class="btn" onclick="abrirAudit()">
+<i class="ph ph-chart-line-up"></i>
+</div>
+
 </footer>
 
-<div id="transScreen" class="screen"></div>
-<div id="auditScreen" class="screen"></div>
+<!-- TRANS -->
+<div id="transScreen" class="screen">
+<h2>Transcripción</h2>
+<div id="transContent"></div>
+<button class="close" onclick="cerrar('transScreen')">Volver</button>
+</div>
+
+<!-- AUDIT -->
+<div id="auditScreen" class="screen">
+<h2>Auditoría</h2>
+<pre id="auditContent"></pre>
+<button class="close" onclick="cerrar('auditScreen')">Volver</button>
+</div>
 
 <script>
 let historial = [];
@@ -154,7 +203,6 @@ const data = await res.json();
 leadName.innerText = data.name;
 leadDesc.innerText = data.desc;
 }
-
 generarLead();
 
 // VOZ CONTINUA
@@ -223,17 +271,29 @@ historial=[];
 await generarLead();
 }
 
+// TRANS
 function abrirTrans(){
-transScreen.style.display="block";
-transScreen.innerHTML=historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
+document.getElementById("transScreen").style.display="block";
+document.getElementById("transContent").innerHTML=
+historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
 }
 
+// AUDIT
 async function abrirAudit(){
-const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"/audit"})});
+const r=await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:"/audit"})
+});
 const d=await r.json();
 
-auditScreen.style.display="block";
-auditScreen.innerHTML="<pre>"+d.reply+"</pre>";
+document.getElementById("auditScreen").style.display="block";
+document.getElementById("auditContent").innerText=d.reply;
+}
+
+// 🔥 FIX VOLVER (CLAVE)
+function cerrar(id){
+document.getElementById(id).style.display="none";
 }
 </script>
 
