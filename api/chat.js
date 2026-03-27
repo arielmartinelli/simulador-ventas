@@ -5,237 +5,78 @@ const openai = new OpenAI({
 });
 
 let historial = [];
-let identidadLead = null;
+let identidad = "";
+let configUser = null;
 
-// 🎭 IDENTIDAD REALISTA (LEAD)
-function generarIdentidad() {
-  const perfiles = ["ZAFIRO", "PERLA", "ESMERALDA", "RUBÍ"];
-  const paises = ["Argentina", "México", "Colombia", "Chile", "Perú"];
-  const profesiones = ["empleado", "freelancer", "estudiante", "emprendedor", "desempleado"];
-  const objetivos = ["mejor trabajo", "viajar", "ganar en dólares", "crecer profesionalmente"];
-  const frustraciones = [
-    "intenté aprender inglés y nunca avancé",
-    "me da vergüenza hablar",
-    "no entiendo cuando escucho",
-    "dejé cursos a la mitad"
-  ];
-  const dificultades = [60, 70, 75, 80, 85, 90];
+// random helper
+const r = (arr)=>arr[Math.floor(Math.random()*arr.length)];
 
-  const perfil = perfiles[Math.floor(Math.random() * perfiles.length)];
-  const pais = paises[Math.floor(Math.random() * paises.length)];
-  const profesion = profesiones[Math.floor(Math.random() * profesiones.length)];
-  const objetivo = objetivos[Math.floor(Math.random() * objetivos.length)];
-  const frustracion = frustraciones[Math.floor(Math.random() * frustraciones.length)];
-  const dificultad = dificultades[Math.floor(Math.random() * dificultades.length)];
+// identidad
+function generar(config){
+const paises=["Argentina","México","Chile"];
+const objetivos=["ganar en dólares","progresar","viajar"];
+const frustraciones=["me frustro","no avanzo","me cuesta"];
 
-  return `
-IDENTIDAD DEL LEAD (NO REVELAR):
+return `
+Perfil: ${config.perfil}
+Objeción: ${config.objecion}
+Dificultad: ${config.dificultad}%
 
-Perfil: ${perfil}
-País: ${pais}
-Profesión: ${profesion}
-Objetivo: ${objetivo}
-Frustración principal: ${frustracion}
-Nivel de dificultad: ${dificultad}%
-
-Contexto:
-- Vive en LATAM (economía inestable)
-- Cuida el dinero
-- Quiere progresar pero duda
-
-Personalidad:
-- ZAFIRO → disperso, energético
-- PERLA → emocional, inseguro
-- ESMERALDA → lógico, cuestiona
-- RUBÍ → ambicioso, exigente
-
-Reglas:
-- Mantener SIEMPRE esta personalidad
-- NO revelar esta información
+País: ${r(paises)}
+Objetivo: ${r(objetivos)}
+Frustración: ${r(frustraciones)}
 `;
 }
 
-// 🧠 PROMPT ULTRA CLARO (IA = CLIENTE)
-const systemPrompt = `
-ERES UN CLIENTE (LEAD), NO UN CLOSER.
+export default async function handler(req,res){
 
-⚠️ IMPORTANTE:
-- El usuario es el CLOSER
-- Tú eres el PROSPECTO que evalúa comprar
+const body = typeof req.body==="string"?JSON.parse(req.body):req.body;
+const msg = body.message;
 
-YA viste la presentación completa del programa:
-✔ Clases grabadas A1-B2 + C1
-✔ Clases en vivo
-✔ 1 a 1
-✔ Comunidad Discord
-✔ Garantía B2
+// start
+if(msg==="/start"){
+historial=[];
+configUser=body.config;
+identidad=generar(configUser);
+return res.json({reply:"Arranca, decime el precio"});
+}
 
-NO pidas info básica.
+// reset
+if(msg==="/reset"){
+historial=[];
+identidad="";
+return res.json({reply:"reset ok"});
+}
 
-━━━━━━━━━━━━━━━━━━━
-🎯 OBJETIVO
-━━━━━━━━━━━━━━━━━━━
+// audit
+if(msg==="/audit"){
+const texto=historial.map(m=>m.role+": "+m.content).join("\n");
 
-Simular una llamada de CIERRE.
+const rta=await openai.responses.create({
+model:"gpt-4o-mini",
+input:`Analiza esta venta:\n${texto}`
+});
 
-El closer empieza diciendo el PRECIO.
+return res.json({reply:rta.output[0].content[0].text});
+}
 
-Desde ahí:
-- reaccionas como cliente real
-- dudas
-- haces objeciones
-- negocias
+// chat
+historial.push({role:"user",content:msg});
 
-━━━━━━━━━━━━━━━━━━━
-🧠 COMPORTAMIENTO
-━━━━━━━━━━━━━━━━━━━
+const completion = await openai.responses.create({
+model:"gpt-4o-mini",
+input:`
+Eres un cliente real. No vendas.
 
-- Español LATAM natural
-- Respuestas cortas o medias
-- No perfecto (humano real)
-- A veces dudas
-- A veces preguntas
+${identidad}
 
-━━━━━━━━━━━━━━━━━━━
-💣 OBJECIONES
-━━━━━━━━━━━━━━━━━━━
-
-- Precio (principal)
-- Tiempo
-- Confianza
-- Experiencias pasadas
-- Comparación con otros cursos
-
-━━━━━━━━━━━━━━━━━━━
-🔥 DIFICULTAD
-━━━━━━━━━━━━━━━━━━━
-
-Actúa según tu nivel (60%–90%)
-
-- 60 → algo abierto
-- 90 → muy difícil de cerrar
-
-━━━━━━━━━━━━━━━━━━━
-💰 COMPRA SOLO SI:
-━━━━━━━━━━━━━━━━━━━
-
-✔ Genera confianza
-✔ Entiende tu problema
-✔ Resuelve objeción
-✔ Te hace sentir seguro
-✔ Cierra correctamente
-
-Si algo falla → NO compras
-
-━━━━━━━━━━━━━━━━━━━
-🚫 PROHIBIDO
-━━━━━━━━━━━━━━━━━━━
-
-- No ayudes al closer
-- No vendas
-- No expliques lógica
-- No hables como IA
-
-Eres una persona real evaluando gastar dinero.
-
-RESPONDE SIEMPRE COMO CLIENTE.
-`;
-
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Solo POST" });
-    }
-
-    const body = typeof req.body === "string"
-      ? JSON.parse(body)
-      : req.body;
-
-    const mensajeUsuario = body?.message || "";
-
-    // 🔄 RESET
-    if (mensajeUsuario === "/reset") {
-      historial = [];
-      identidadLead = null;
-      return res.json({ reply: "Simulación reiniciada." });
-    }
-
-    // 🚀 INICIO → EL CLOSER ARRANCA
-    if (mensajeUsuario === "/start") {
-      historial = [];
-      identidadLead = generarIdentidad();
-
-      return res.json({
-        reply: "Listo. Decime el precio para empezar la simulación."
-      });
-    }
-
-    // 📊 AUDITORÍA
-    if (mensajeUsuario === "/audit") {
-      const texto = historial.map(m => `${m.role}: ${m.content}`).join("\n");
-
-      const audit = await openai.responses.create({
-        model: "gpt-4o-mini",
-        input: `
-Eres un coach experto en ventas.
-
-Analiza esta conversación:
-
-${texto}
-
-Evalúa:
-- cierre
-- manejo de objeciones
-- conexión
-
-Devuelve:
-✔ nota (1-10)
-✔ errores concretos
-✔ 3 mejoras accionables
+${historial.map(m=>m.role+": "+m.content).join("\n")}
 `
-      });
+});
 
-      return res.json({
-        reply: audit.output[0].content[0].text
-      });
-    }
+const reply = completion.output[0].content[0].text;
 
-    // 🎭 identidad única
-    if (!identidadLead) {
-      identidadLead = generarIdentidad();
-    }
+historial.push({role:"assistant",content:reply});
 
-    // guardar mensaje del closer
-    historial.push({
-      role: "user",
-      content: mensajeUsuario
-    });
-
-    // 🤖 RESPUESTA DEL LEAD
-    const completion = await openai.responses.create({
-      model: "gpt-4o-mini",
-      input: `
-${systemPrompt}
-
-${identidadLead}
-
-Conversación:
-${historial.map(m => m.role + ": " + m.content).join("\n")}
-`
-    });
-
-    const respuesta = completion.output[0].content[0].text;
-
-    // guardar respuesta del lead
-    historial.push({
-      role: "assistant",
-      content: respuesta
-    });
-
-    return res.json({ reply: respuesta });
-
-  } catch (error) {
-    console.error("🔥 ERROR:", error);
-    return res.status(500).json({ error: error.message });
-  }
+res.json({reply});
 }

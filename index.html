@@ -5,452 +5,277 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simulador Closers PRO</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
-    :root {
-        --bg-dark: #0f172a;
-        --surface: #1e293b;
-        --surface-glass: rgba(30, 41, 59, 0.7);
-        --primary: #3b82f6;
-        --primary-hover: #2563eb;
-        --danger: #ef4444;
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --border: rgba(255, 255, 255, 0.1);
-    }
+:root {
+    --bg-dark:#0f172a;
+    --surface:#1e293b;
+    --primary:#3b82f6;
+    --danger:#ef4444;
+    --text:#fff;
+}
+body {
+    margin:0;
+    font-family:Inter;
+    background:var(--bg-dark);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+/* HEADER */
+.header {
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+}
 
-    body {
-        background: var(--bg-dark);
-        font-family: 'Inter', sans-serif;
-        color: var(--text-main);
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-    }
+/* MAIN */
+.stage {
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
 
-    /* HEADER */
-    .header {
-        padding: 20px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: transparent;
-        z-index: 10;
-    }
+.avatar {
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    overflow:hidden;
+}
 
-    .header-title {
-        font-weight: 600;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+.avatar img {
+    width:100%;
+}
 
-    .header-title i {
-        color: var(--primary);
-        font-size: 1.4rem;
-    }
+/* SUBTÍTULOS */
+.subtitles {
+    position:absolute;
+    bottom:60px;
+    background:rgba(0,0,0,.6);
+    padding:10px 20px;
+    border-radius:10px;
+    opacity:0;
+    transition:.3s;
+}
+.subtitles.visible { opacity:1 }
 
-    .status-badge {
-        background: rgba(16, 185, 129, 0.15);
-        color: #10b981;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.3s ease;
-    }
+/* CONTROLES */
+.controls {
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    padding:20px;
+}
 
-    .status-badge.listening {
-        background: rgba(239, 68, 68, 0.15);
-        color: var(--danger);
-    }
+button {
+    padding:12px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+}
 
-    /* MAIN STAGE (SIMULACIÓN) */
-    .stage {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        position: relative;
-    }
+.talk { background:var(--primary) }
+.recording { background:var(--danger) }
 
-    .video-card {
-        width: 100%;
-        max-width: 800px;
-        height: 60vh;
-        background: var(--surface);
-        border-radius: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        border: 1px solid var(--border);
-        overflow: hidden;
-    }
+/* MODAL */
+#configModal {
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
 
-    /* AVATAR */
-    .avatar-wrapper {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.box {
+    background:#1e293b;
+    padding:30px;
+    border-radius:20px;
+    width:300px;
+}
 
-    .avatar {
-        width: 160px;
-        height: 160px;
-        background: #e2e8f0;
-        border-radius: 50%;
-        overflow: hidden;
-        position: relative;
-        z-index: 2;
-        border: 4px solid var(--surface);
-        transition: all 0.3s ease;
-    }
+select, .startBtn {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+}
 
-    .avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* EFECTO RETROILUMINADO (GLOW) AL HABLAR */
-    .talking .avatar {
-        /* alternate hace que el brillo suba y baje suavemente */
-        animation: neon-pulse 1s infinite alternate ease-in-out;
-    }
-
-    @keyframes neon-pulse {
-        0% {
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3),
-                        0 0 20px rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.4);
-        }
-        100% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
-                        0 0 40px rgba(59, 130, 246, 0.5),
-                        0 0 60px rgba(59, 130, 246, 0.3);
-            border-color: rgba(59, 130, 246, 0.9);
-        }
-    }
-
-    
-    /* SUBTÍTULOS */
-    .subtitles-container {
-        position: absolute;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        max-width: 600px;
-        text-align: center;
-        z-index: 10;
-        pointer-events: none;
-    }
-
-    .subtitles {
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(10px);
-        color: white;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-size: 1.1rem;
-        line-height: 1.5;
-        display: inline-block;
-        border: 1px solid rgba(255,255,255,0.05);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .subtitles.visible {
-        opacity: 1;
-    }
-
-    /* DOCK DE CONTROLES (Estilo Videollamada) */
-    .controls-dock {
-        padding: 24px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        background: transparent;
-        padding-bottom: 40px;
-    }
-
-    .btn-control {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--surface-glass);
-        backdrop-filter: blur(10px);
-        color: var(--text-main);
-        font-size: 1.5rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-
-    .btn-control:hover {
-        background: var(--surface);
-        transform: translateY(-2px);
-    }
-
-    .btn-control .tooltip {
-        position: absolute;
-        top: -40px;
-        background: var(--surface);
-        font-size: 0.75rem;
-        padding: 6px 10px;
-        border-radius: 6px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-        white-space: nowrap;
-        border: 1px solid var(--border);
-    }
-
-    .btn-control:hover .tooltip {
-        opacity: 1;
-    }
-
-    /* Botón de hablar principal */
-    .btn-talk {
-        background: var(--primary);
-        border: none;
-        width: 64px;
-        height: 64px;
-        font-size: 1.8rem;
-    }
-
-    .btn-talk:hover {
-        background: var(--primary-hover);
-    }
-
-    .btn-talk.recording {
-        background: var(--danger);
-        animation: pulse-red 1.5s infinite;
-    }
-
-    @keyframes pulse-red {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-
+/* SCREENS */
+.screen {
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    display:none;
+    padding:30px;
+    overflow:auto;
+    z-index:999;
+}
 </style>
 </head>
 
 <body>
 
+<!-- CONFIG -->
+<div id="configModal">
+<div class="box">
+<h3>Configurar Lead</h3>
+
+<select id="perfil">
+<option>ZAFIRO</option>
+<option>PERLA</option>
+<option>ESMERALDA</option>
+<option>RUBÍ</option>
+</select>
+
+<select id="objecion">
+<option>precio</option>
+<option>tiempo</option>
+<option>confianza</option>
+<option>experiencias</option>
+</select>
+
+<select id="dificultad">
+<option value="60">60%</option>
+<option value="70">70%</option>
+<option value="80">80%</option>
+<option value="90">90%</option>
+</select>
+
+<button class="startBtn" onclick="iniciar()">Iniciar</button>
+</div>
+</div>
+
 <header class="header">
-    <div class="header-title">
-        <i class="ph-fill ph-target"></i> Closers PRO
-    </div>
-    <div id="statusBadge" class="status-badge">
-        <i class="ph-fill ph-check-circle"></i> Listo para iniciar
-    </div>
+<div>Closers PRO</div>
+<div id="status">Listo</div>
 </header>
 
 <main class="stage">
-    <div class="video-card">
-        <div id="avatarWrapper" class="avatar-wrapper">
-            <div class="speaking-ring"></div>
-            <div class="avatar">
-                <img id="avatarImg" alt="Avatar del prospecto">
-            </div>
-        </div>
-        
-        <div class="lead-info">
-            <i class="ph-fill ph-user-circle"></i> Lead LATAM
-        </div>
-    </div>
+<div class="avatar">
+<img id="avatarImg">
+</div>
 
-    <div class="subtitles-container">
-        <div id="subtitles" class="subtitles"></div>
-    </div>
+<div id="subtitles" class="subtitles"></div>
 </main>
 
-<footer class="controls-dock">
-    <button class="btn-control" onclick="resetChat()">
-        <i class="ph ph-arrow-counter-clockwise"></i>
-        <span class="tooltip">Reiniciar Sala</span>
-    </button>
-
-    <button id="talkBtn" class="btn-control btn-talk">
-        <i id="micIcon" class="ph-fill ph-microphone"></i>
-        <span class="tooltip">Hablar</span>
-    </button>
-
-    <button class="btn-control" onclick="pausarLead()">
-        <i class="ph ph-pause"></i>
-        <span class="tooltip">Pausar Lead</span>
-    </button>
-
-    <button class="btn-control" onclick="auditar()">
-        <i class="ph ph-chart-line-up"></i>
-        <span class="tooltip">Ver Auditoría</span>
-    </button>
+<footer class="controls">
+<button onclick="reset()">🔄</button>
+<button id="talkBtn" class="talk">🎤</button>
+<button onclick="verTrans()">📝</button>
+<button onclick="auditar()">📊</button>
 </footer>
 
+<!-- TRANS -->
+<div id="transScreen" class="screen">
+<h2>Transcripción</h2>
+<pre id="trans"></pre>
+<button onclick="cerrar('transScreen')">Volver</button>
+</div>
+
+<!-- AUDIT -->
+<div id="auditScreen" class="screen">
+<h2>Auditoría</h2>
+<pre id="audit"></pre>
+<button onclick="cerrar('auditScreen')">Volver</button>
+</div>
+
 <script>
-    const talkBtn = document.getElementById("talkBtn");
-    const micIcon = document.getElementById("micIcon");
-    const statusBadge = document.getElementById("statusBadge");
-    const subtitles = document.getElementById("subtitles");
-    const avatarWrapper = document.getElementById("avatarWrapper");
-    const avatarImg = document.getElementById("avatarImg");
+let config = {};
+let historial = [];
 
-    // 🎭 Avatar más humano/ilustrativo (Colección 'notionists')
-    function randomAvatar() {
-        const seed = Math.floor(Math.random() * 9999);
-        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=e2e8f0`;
-    }
-    randomAvatar();
+// avatar random
+document.getElementById("avatarImg").src =
+`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-    // 🎤 Speech Recognition
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const rec = new Recognition();
-    rec.lang = "es-AR";
+// iniciar
+async function iniciar(){
+config = {
+perfil:perfil.value,
+objecion:objecion.value,
+dificultad:dificultad.value
+};
 
-    talkBtn.onclick = () => {
-        try {
-            rec.start();
-            // UI Update: Grabando
-            talkBtn.classList.add("recording");
-            micIcon.classList.replace("ph-microphone", "ph-stop");
-            updateStatus("Escuchando...", "listening", "ph-microphone-stage");
-        } catch (e) {
-            console.log("El micrófono ya está activo o bloqueado.");
-        }
-    };
+await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:"/start", config})
+});
 
-    rec.onend = () => {
-        talkBtn.classList.remove("recording");
-        micIcon.classList.replace("ph-stop", "ph-microphone");
-    }
+configModal.style.display="none";
+}
 
-    rec.onresult = async (event) => {
-        const text = event.results[0][0].transcript;
+// voz
+const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+rec.lang="es-AR";
 
-        mostrarSubtitulo("Tú: " + text);
-        updateStatus("Escribiendo...", "", "ph-dots-three");
+talkBtn.onclick=()=>rec.start();
 
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: text })
-            });
+rec.onresult=async e=>{
+const text = e.results[0][0].transcript;
 
-            const data = await res.json();
-            const respuesta = data.reply || "No obtuve respuesta.";
+historial.push("TÚ: "+text);
+mostrar("Tú: "+text);
 
-            mostrarSubtitulo("Lead: " + respuesta);
-            hablar(respuesta);
-        } catch (error) {
-            mostrarSubtitulo("Error de conexión con el simulador.");
-            updateStatus("Error", "", "ph-warning-circle");
-        }
-    };
+const res = await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:text})
+});
 
-    // 🎬 SUBTÍTULOS Y ESTADO
-    let subtitleTimeout;
-    function mostrarSubtitulo(text) {
-        subtitles.innerText = text;
-        subtitles.classList.add("visible");
-        
-        clearTimeout(subtitleTimeout);
-        subtitleTimeout = setTimeout(() => {
-            subtitles.classList.remove("visible");
-        }, 8000); // Ocultar después de 8 segundos
-    }
+const data = await res.json();
 
-    function updateStatus(text, modeClass = "", iconClass = "ph-info") {
-        statusBadge.className = `status-badge ${modeClass}`;
-        statusBadge.innerHTML = `<i class="ph-fill ${iconClass}"></i> ${text}`;
-    }
+historial.push("LEAD: "+data.reply);
+mostrar("Lead: "+data.reply);
+hablar(data.reply);
+};
 
-    // 🔊 VOZ + ANIMACIÓN SUTIL
-    function hablar(text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "es-ES"; 
+// subtitulo
+function mostrar(t){
+subtitles.innerText=t;
+subtitles.classList.add("visible");
+setTimeout(()=>subtitles.classList.remove("visible"),5000);
+}
 
-        avatarWrapper.classList.add("talking");
-        updateStatus("Lead respondiendo...", "", "ph-speaker-high");
+// voz
+function hablar(t){
+let u=new SpeechSynthesisUtterance(t);
+speechSynthesis.speak(u);
+}
 
-        utterance.onend = () => {
-            avatarWrapper.classList.remove("talking");
-            updateStatus("Tu turno", "", "ph-check-circle");
-        };
+// reset
+async function reset(){
+historial=[];
+await fetch("/api/chat",{method:"POST",body:JSON.stringify({message:"/reset"})});
+}
 
-        speechSynthesis.speak(utterance);
-    }
+// trans
+function verTrans(){
+trans.innerText=historial.join("\n\n");
+transScreen.style.display="block";
+}
 
-    // ⏸️
-    function pausarLead() {
-        speechSynthesis.cancel();
-        avatarWrapper.classList.remove("talking");
-        updateStatus("Simulación pausada", "", "ph-pause-circle");
-    }
+// audit
+async function auditar(){
+const r=await fetch("/api/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:"/audit"})
+});
+const d=await r.json();
+audit.innerText=d.reply;
+auditScreen.style.display="block";
+}
 
-    // 🔄 RESET
-    async function resetChat() {
-        updateStatus("Reiniciando...", "", "ph-arrows-clockwise");
-        try {
-            await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: "/reset" })
-            });
-            mostrarSubtitulo("Simulación reiniciada.");
-            randomAvatar();
-            updateStatus("Listo para iniciar", "", "ph-check-circle");
-        } catch (e) {
-            mostrarSubtitulo("Simulación reiniciada (Local).");
-            randomAvatar();
-            updateStatus("Listo para iniciar", "", "ph-check-circle");
-        }
-    }
-
-    // 📊 AUDIT
-    async function auditar() {
-        updateStatus("Generando auditoría...", "", "ph-chart-line-up");
-        try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ message: "/audit" })
-            });
-            const data = await res.json();
-            mostrarSubtitulo(data.reply || "Revisa la consola para el reporte.");
-            updateStatus("Auditoría completa", "", "ph-check-circle");
-        } catch (e) {
-            mostrarSubtitulo("Error al cargar la auditoría.");
-            updateStatus("Error", "", "ph-warning-circle");
-        }
-    }
+function cerrar(id){
+document.getElementById(id).style.display="none";
+}
 </script>
 
 </body>
