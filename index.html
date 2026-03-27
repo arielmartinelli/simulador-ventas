@@ -58,6 +58,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 flex-direction:column;
+position:relative;
 }
 
 .video-card{
@@ -66,9 +67,8 @@ height:55vh;
 background:#1e293b;
 border-radius:24px;
 display:flex;
-flex-direction:column;
-align-items:center;
 justify-content:center;
+align-items:center;
 }
 
 /* AVATAR */
@@ -104,23 +104,38 @@ transition:.3s;
 .controls{
 display:flex;
 justify-content:center;
-gap:20px;
-padding:20px;
+gap:18px;
+padding:30px;
 }
 
 .btn{
-width:60px;
-height:60px;
+width:48px;
+height:48px;
 border-radius:50%;
-background:#1e293b;
+background:rgba(30,41,59,0.8);
 display:flex;
 align-items:center;
 justify-content:center;
 cursor:pointer;
+color:white;
 }
 
-.talk{background:var(--primary)}
-.recording{background:var(--danger)}
+.btn-talk{
+width:64px;
+height:64px;
+background:var(--primary);
+font-size:22px;
+}
+
+.recording{
+background:var(--danger);
+animation:pulse 1.4s infinite;
+}
+
+@keyframes pulse{
+0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}
+70%{box-shadow:0 0 0 18px rgba(239,68,68,0)}
+}
 
 /* SCREENS */
 .screen{
@@ -131,6 +146,15 @@ display:none;
 padding:30px;
 overflow:auto;
 font-family:"JetBrains Mono";
+}
+
+.close{
+margin-top:20px;
+padding:10px;
+background:#1e293b;
+border:none;
+color:white;
+cursor:pointer;
 }
 </style>
 </head>
@@ -160,23 +184,50 @@ font-family:"JetBrains Mono";
 </main>
 
 <footer class="controls">
-<div class="btn" onclick="reset()">🔄</div>
-<div id="talkBtn" class="btn talk">🎤</div>
-<div class="btn" onclick="trans()">📝</div>
-<div class="btn" onclick="audit()">📊</div>
+
+<div class="btn" onclick="reset()">
+<i class="ph ph-arrow-counter-clockwise"></i>
+</div>
+
+<div id="talkBtn" class="btn btn-talk">
+<i id="micIcon" class="ph-fill ph-microphone"></i>
+</div>
+
+<div class="btn" onclick="pausar()">
+<i class="ph ph-pause"></i>
+</div>
+
+<div class="btn" onclick="abrirTrans()">
+<i class="ph ph-text-align-left"></i>
+</div>
+
+<div class="btn" onclick="abrirAudit()">
+<i class="ph ph-chart-line-up"></i>
+</div>
+
 </footer>
 
-<div id="transScreen" class="screen"></div>
-<div id="auditScreen" class="screen"></div>
+<!-- TRANSCRIPCIÓN -->
+<div id="transScreen" class="screen">
+<h2>Transcripción</h2>
+<div id="transContent"></div>
+<button class="close" onclick="cerrar('transScreen')">Volver</button>
+</div>
+
+<!-- AUDITORÍA -->
+<div id="auditScreen" class="screen">
+<h2>Auditoría</h2>
+<pre id="auditContent"></pre>
+<button class="close" onclick="cerrar('auditScreen')">Volver</button>
+</div>
 
 <script>
 let historial=[];
 
-// avatar
 avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-// generar lead en pantalla
-async function generarLeadUI(){
+// generar lead
+async function generarLead(){
 const res=await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -188,7 +239,7 @@ leadName.innerText=data.name;
 leadDesc.innerText=data.desc;
 }
 
-generarLeadUI();
+generarLead();
 
 // voz
 const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
@@ -197,11 +248,13 @@ rec.lang="es-AR";
 talkBtn.onclick=()=>{
 rec.start();
 talkBtn.classList.add("recording");
+micIcon.classList.replace("ph-microphone","ph-stop");
 status.innerText="Escuchando...";
 };
 
 rec.onend=()=>{
 talkBtn.classList.remove("recording");
+micIcon.classList.replace("ph-stop","ph-microphone");
 };
 
 rec.onresult=async e=>{
@@ -245,23 +298,27 @@ status.innerText="Tu turno";
 speechSynthesis.speak(u);
 }
 
-// reset
 async function reset(){
 historial=[];
-await generarLeadUI();
-status.innerText="Nuevo lead generado";
+await generarLead();
+status.innerText="Nuevo lead";
 }
 
-// trans
-function trans(){
-transScreen.style.display="block";
-transScreen.innerHTML="<h2>Transcripción</h2>"+historial.map(m=>
-`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`
-).join("");
+function pausar(){
+speechSynthesis.cancel();
+avatarWrap.classList.remove("talking");
+status.innerText="Pausado";
 }
 
-// audit
-async function audit(){
+// TRANS
+function abrirTrans(){
+document.getElementById("transScreen").style.display="block";
+document.getElementById("transContent").innerHTML=
+historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
+}
+
+// AUDIT
+async function abrirAudit(){
 const r=await fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -269,8 +326,13 @@ body:JSON.stringify({message:"/audit"})
 });
 const d=await r.json();
 
-auditScreen.style.display="block";
-auditScreen.innerHTML="<h2>Auditoría</h2><pre>"+d.reply+"</pre>";
+document.getElementById("auditScreen").style.display="block";
+document.getElementById("auditContent").innerText=d.reply;
+}
+
+// cerrar
+function cerrar(id){
+document.getElementById(id).style.display="none";
 }
 </script>
 

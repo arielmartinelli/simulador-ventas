@@ -18,17 +18,11 @@ const perfiles=["ZAFIRO","PERLA","ESMERALDA","RUBÍ"];
 const perfil=r(perfiles);
 
 leadPublic={
-name: r(nombres),
-desc: `${r(profesiones)} de ${r(paises)} • Quiere aprender inglés para ${r(["trabajar mejor","ganar más dinero","viajar"])} • Problema: ${r(["no avanza","le cuesta","lo deja siempre"])}`
+name:r(nombres),
+desc:`${r(profesiones)} de ${r(paises)} • Quiere aprender inglés para ${r(["trabajar mejor","ganar más dinero","viajar"])} • Problema: ${r(["no avanza","le cuesta","lo deja siempre"])}`
 };
 
-identidad=`
-Perfil: ${perfil}
-Actitud según perfil.
-
-No reveles el perfil.
-`;
-
+identidad=`Perfil: ${perfil}. No revelarlo.`;
 }
 
 export default async function handler(req,res){
@@ -40,7 +34,6 @@ const msg=body.message;
 if(msg==="/start"){
 historial=[];
 generarLead();
-
 return res.json({
 reply:"Arranca",
 name:leadPublic.name,
@@ -60,7 +53,7 @@ const texto=historial.map(m=>m.role+": "+m.content).join("\n");
 
 const rta=await openai.responses.create({
 model:"gpt-4o-mini",
-input:`Analiza esta venta:\n${texto}`
+input:`Analiza esta llamada:\n${texto}`
 });
 
 return res.json({reply:rta.output[0].content[0].text});
@@ -71,13 +64,7 @@ historial.push({role:"user",content:msg});
 
 const ai=await openai.responses.create({
 model:"gpt-4o-mini",
-input:`
-Eres un cliente real.
-
-${identidad}
-
-${historial.map(m=>m.role+": "+m.content).join("\n")}
-`
+input:`Eres un cliente real.\n${identidad}\n${historial.map(m=>m.role+": "+m.content).join("\n")}`
 });
 
 const reply=ai.output[0].content[0].text;
