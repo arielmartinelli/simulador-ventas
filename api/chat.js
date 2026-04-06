@@ -19,7 +19,7 @@ function generarLead(config = {}) {
     };
 
     const historias = [
-        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Me piden inglés para subir de puesto. Dolor: Ansiedad por perder crecimiento económico y desesperación por estancamiento." },
+        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Me piden inglés para subir de puesto. Dolor: Ansiedad por perder crecimiento económico y desesperación de estancamiento." },
         { id: "viajero", titulo: "Viajero Limitado", dolor: "Amo viajar pero no puedo comunicarme. Dolor: Sentirse inútil, depender de otros para comer o moverse; frustración." },
         { id: "emigracion", titulo: "Emigración Próxima", dolor: "Voy a mudarme de país. Dolor: Pánico a un cambio radical y perder oportunidades laborales." },
         { id: "residente", titulo: "Residente en EE.UU.", dolor: "Ya vivo allá pero no hablo el idioma. Dolor: Aislamiento social y dificultad extrema en el día a día." },
@@ -31,6 +31,16 @@ function generarLead(config = {}) {
         "PERLA": "Calmado, amable, buscas seguridad. Te mueve ayudar a tu familia. Buen oyente.",
         "ESMERALDA": "Analítico, frío y escéptico. Quieres datos y el 'cómo' exacto. Odias el small talk.",
         "RUBÍ": "Ambicioso y directo. Quieres saber cómo esto te da estatus o ingresos. Te mueven retos."
+    };
+
+    const objecionesDetalle = {
+        "dinero": "No tengo el dinero ahora, es una inversión muy alta para mi situación actual y me da miedo no poder pagarlo.",
+        "tiempo": "No tengo tiempo, mi agenda está explotada y temo pagar para no usarlo.",
+        "pareja": "Lo tengo que consultar con mi pareja, no tomo estas decisiones solo/a.",
+        "confianza": "Necesito ver reseñas o investigar más la academia, hoy en día hay muchas estafas y no tengo total confianza.",
+        "presion": "No me gusta la presión para arrancar hoy mismo, prefiero pensarlo con calma.",
+        "prueba": "Quiero un tiempo de prueba (una semana o un mes) antes de comprometerme a los 12 meses.",
+        "baja": "¿Qué pasa si quiero darme de baja antes de los 12 meses? Me da pánico quedar atado a un contrato largo."
     };
 
     const pKey = (config.country === "random" || !config.country) ? r(Object.keys(paises)) : config.country;
@@ -63,14 +73,18 @@ function generarLead(config = {}) {
         eventoOculto: eventoOculto
     };
 
-    // Instruction logic for Difficulty
+    let objInstr = "";
+    if (config.objection && config.objection !== "random") {
+        objInstr = `Tu objeción principal y más persistente es: "${objecionesDetalle[config.objection] || config.objection}". Úsala para resistirte al cierre.`;
+    }
+
     let diffInstr = "";
     if (diff === "facil") {
-        diffInstr = "Nivel: FÁCIL. Eres más amable y propenso a aceptar. Solo lanza 1 objeción suave. Si el closer empatiza mínimamente, sube el Rapport mucho.";
+        diffInstr = "Nivel: FÁCIL. Solo lanza 1 objeción suave. Si el closer empatiza un poco, sube el Rapport rápido.";
     } else if (diff === "dificil") {
-        diffInstr = "Nivel: DIFÍCIL. Eres extremadamente escéptico y directo. Lanza al menos 4 objeciones duras. NO cerrarás si falta CUALQUIER paso del ERANC (E, R, A, N, C).";
+        diffInstr = "Nivel: DIFÍCIL. Eres muy escéptico. Lanza al menos 4 objeciones duras de la lista. No cerrarás si falta el ERANC.";
     } else {
-        diffInstr = "Nivel: NORMAL. Lanza 3 objeciones reales. Comportamiento equilibrado.";
+        diffInstr = "Nivel: NORMAL. Lanza 3 objeciones reales.";
     }
 
     const promptText = `
@@ -81,6 +95,7 @@ function generarLead(config = {}) {
 - País: ${pais.nombre} (${pais.modismos})
 - Historia Oculta (Discovery): Profesión ${profesion}, Evento: ${eventoOculto}. (Revélalo solo ante buen discovery).
 - Dificultad: ${diffInstr}
+${objInstr ? `- REGLA CLAVE OBJETIVA: ${objInstr}` : "- REGLA: Lanza objeciones de dinero, tiempo, pareja, confianza o baja según tu personalidad."}
 
 2. CIERRE (ERANC): E (Empatía), R (Reconfirmar), A (Aislar), N (Negociar), C (Cerrar).
 3. RESPUESTA REQUERIDA (JSON):
@@ -90,17 +105,10 @@ function generarLead(config = {}) {
     "rapport": 0-100,
     "discovery": 0-100,
     "mood": "...",
-    "eranc": {
-      "E": "red|yellow|green",
-      "R": "red|yellow|green",
-      "A": "red|yellow|green",
-      "N": "red|yellow|green",
-      "C": "red|yellow|green"
-    },
+    "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" },
     "sold": true/false
   }
 }
-*REGLA: "sold" es true SOLO si el closer hizo un cierre exitoso tras resolver tus objeciones.*
 `;
 
     return { leadPublic, promptText };
@@ -111,14 +119,18 @@ export default async function handler(req, res) {
     const msg = body.message;
 
     if (msg === "/start") {
-        const { leadPublic, promptText } = generarLead(body.config);
-        // Start without AI greeting (as per request)
-        return res.json({
-            reply: "",
-            metrics: { rapport: 0, discovery: 0, mood: "Esperando inicio...", eranc: { E: "red", R: "red", A: "red", N: "red", C: "red" }, sold: false },
-            lead: leadPublic,
-            identidad: promptText 
-        });
+        try {
+            const { leadPublic, promptText } = generarLead(body.config);
+            return res.json({
+                reply: "",
+                metrics: { rapport: 0, discovery: 0, mood: "Esperando inicio...", eranc: { E: "red", R: "red", A: "red", N: "red", C: "red" }, sold: false },
+                lead: leadPublic,
+                identidad: promptText 
+            });
+        } catch (err) {
+            console.error("Error in /start:", err);
+            return res.status(500).json({ error: "No se pudo iniciar el lead" });
+        }
     }
 
     if (msg === "/voice") {
@@ -142,7 +154,6 @@ export default async function handler(req, res) {
         return res.json({ reply: ai.choices[0].message.content });
     }
 
-    // --- CHAT PRINCIPAL ---
     try {
         const ai = await openai.chat.completions.create({
             model: "gpt-4o",
