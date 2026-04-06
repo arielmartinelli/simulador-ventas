@@ -607,6 +607,63 @@
             outline: none;
         }
 
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-date {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .history-outcome {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
         .btn-start {
             width: 100%;
             padding: 1.25rem;
@@ -830,7 +887,13 @@
             <h1>Conquer Languages Simulator</h1>
             <div class="config-grid">
                 <div class="config-card">
-                    <h3>Tu Nombre</h3><input type="text" id="cName" placeholder="Tu nombre..." required>
+                    <h3>Vendedor / Closer</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select id="closerSelect">
+                            <option value="">Cargando...</option>
+                        </select>
+                        <button onclick="addCloser()" class="btn" style="width: 45px; height: 45px; border-radius: 12px; flex-shrink: 0;"><i class="ph ph-plus"></i></button>
+                    </div>
                 </div>
                 <div class="config-card">
                     <h3>Dificultad</h3><select id="lDiff">
@@ -883,6 +946,33 @@
                 </div>
             </div>
             <button class="btn-start" onclick="start()">ENTRAR A LA LLAMADA</button>
+            <button class="btn-ghost" onclick="openHistory()" style="width: 100%; margin-top: 1rem; height: 50px; font-size: 0.9rem;">
+                <i class="ph ph-clock-counter-clockwise"></i> Ver Historial de Llamadas
+            </button>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <i class="ph ph-x close-modal" onclick="toggleModal('historyModal')"></i>
+            <h1>Historial de Sesiones</h1>
+            <div id="historyList" class="history-list">
+                <p style="color: var(--text-secondary);">Selecciona un closer para ver sus llamadas.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN MODAL -->
+    <div id="pinModal" class="modal">
+        <div class="config-box" style="max-width: 400px;">
+            <h3>Código de Acceso</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Ingresa el PIN de 4 dígitos para ver el historial.</p>
+            <input type="password" id="pinInput" placeholder="****" maxlength="4" style="text-align: center; font-size: 2rem; letter-spacing: 0.5em; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-ghost" onclick="toggleModal('pinModal')" style="flex: 1;">Cancelar</button>
+                <button class="btn-start" onclick="verifyPin()" style="flex: 1; margin: 0;">Entrar</button>
+            </div>
         </div>
     </div>
 
@@ -892,14 +982,18 @@
                 onclick="reset()" class="btn-start">Finalizar Entreno</button>
         </div>
     </div>
-
     <script>
         let clientHistory = [], ident = "", leadData = null, isRec = false, isPaused = false, audio = null;
-        let timeLeft = 60, timerInterval = null;
+        let timeLeft = 60, timerInterval = null, currentCloserId = null;
 
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         let rec = SR ? new SR() : null;
-        if (rec) { rec.lang = "es-AR"; rec.continuous = true; rec.onresult = (e) => { if (!isPaused) process(e.results[e.results.length - 1][0].transcript); }; rec.onend = () => { if (isRec && !isPaused) rec.start(); }; }
+        if (rec) {
+            rec.lang = "es-AR";
+            rec.continuous = true;
+            rec.onresult = (e) => { if (!isPaused) process(e.results[e.results.length - 1][0].transcript); };
+            rec.onend = () => { if (isRec && !isPaused) rec.start(); };
+        }
 
         function switchTab(t) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(t)));
@@ -909,16 +1003,45 @@
 
         function toggleModal(id) {
             const m = document.getElementById(id);
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        // LOAD CLOSERS ON MOUNT
+        window.onload = fetchClosers;
+
+        async function fetchClosers() {
+            try {
+                const res = await fetch("/api/closers");
+                if (!res.ok) throw new Error("Error API");
+                const data = await res.json();
+                const sel = document.getElementById('closerSelect');
+                sel.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                if (data.length === 0) sel.innerHTML = `<option value="">Añade un closer...</option>`;
+            } catch (err) {
+                console.error("Supabase not connected yet.");
+                document.getElementById('closerSelect').innerHTML = `<option value="">Configura SUPABASE_URL...</option>`;
+            }
+        }
+
+        async function addCloser() {
+            const name = prompt("Nombre del nuevo Closer:");
+            if (!name) return;
+            await fetch("/api/closers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
+            fetchClosers();
         }
 
         async function start() {
-            const name = document.getElementById('cName').value || "Closer";
-            const config = { closerName: name, type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
+            const sel = document.getElementById('closerSelect');
+            if (!sel.value) return alert("Selecciona o añade un closer primero");
+            
+            currentCloserId = sel.value;
+            const closerName = sel.options[sel.selectedIndex].text;
+
+            const config = { closerName, type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
 
             const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
             const data = await res.json();
-
+            
             leadData = data.lead; ident = data.identidad;
             document.getElementById('leadName').innerText = leadData.name;
             document.getElementById('leadPais').innerText = leadData.pais;
@@ -996,7 +1119,78 @@
         function togglePause() { isPaused = !isPaused; const icon = document.getElementById('pauseIcon'), av = document.getElementById('avatarWrap'); if (isPaused) { if (audio) audio.pause(); if (rec) rec.stop(); icon.className = "ph-fill ph-play"; av.classList.add('paused'); } else { if (audio && audio.currentTime > 0) audio.play(); if (isRec) rec.start(); icon.className = "ph-fill ph-pause"; av.classList.remove('paused'); } }
         function setLoading(val) { document.getElementById('loadingGlow').classList.toggle('active', val); }
         function addMsg(role, text) { const wrap = document.getElementById('transContent'), div = document.createElement('div'); div.className = `chat-bubble bubble-${role}`; div.innerText = text; wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight; }
-        async function audit() { document.getElementById('auditScreen').style.display = 'flex'; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) }); const data = await res.json(); document.getElementById('auditResult').innerText = data.reply; }
+
+        async function autoSave(auditText) {
+            if (!currentCloserId) return;
+            await fetch("/api/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    closer_id: currentCloserId,
+                    lead_data: leadData,
+                    transcript: clientHistory,
+                    audit_report: auditText,
+                    metrics: { rapport: document.getElementById('rapportValue').innerText, discovery: document.getElementById('discoveryValue').innerText }
+                })
+            });
+        }
+
+        async function audit() { 
+            document.getElementById('auditScreen').style.display = 'flex'; 
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) }); 
+            const data = await res.json(); 
+            document.getElementById('auditResult').innerText = data.reply; 
+            autoSave(data.reply); 
+        }
+
+        function openHistory() {
+            toggleModal('pinModal');
+        }
+
+        async function verifyPin() {
+            const pin = document.getElementById('pinInput').value;
+            const cid = document.getElementById('closerSelect').value;
+            if (!cid) return alert("Selecciona un closer");
+            
+            const res = await fetch("/api/history", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ closer_id: cid, pin })
+            });
+            
+            if (!res.ok) return alert("PIN Incorrecto");
+            
+            const data = await res.json();
+            toggleModal('pinModal');
+            toggleModal('historyModal');
+            renderHistory(data);
+        }
+
+        function renderHistory(data) {
+            const list = document.getElementById('historyList');
+            if (data.length === 0) list.innerHTML = "<p>No hay llamadas guardadas para este closer.</p>";
+            else {
+                list.innerHTML = data.map(s => `
+                    <div class="history-item" onclick="viewSimulation('${s.id}')">
+                        <div class="history-header">
+                            <strong>Lead: ${s.lead_data.name}</strong>
+                            <span class="history-date">${new Date(s.created_at).toLocaleString()}</span>
+                        </div>
+                        <div class="history-outcome" style="color: ${s.metrics.sold ? 'var(--color-green)' : 'var(--text-secondary)'}">
+                            ${s.metrics.sold ? 'VENTA EXITOSA' : 'SIN CIERRE'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            window.allSims = data;
+        }
+
+        function viewSimulation(id) {
+            const s = window.allSims.find(x => x.id === id);
+            alert(`AUDITORÍA:\n\n${s.audit_report}\n\nREVISA LA CONSOLA PARA EL CHAT LOG`);
+            console.log("CHAT LOG:", s.transcript);
+        }
+
         function reset() { window.location.reload(); }
     </script>
 </body>
