@@ -19,11 +19,11 @@ function generarLead(config = {}) {
     };
 
     const historias = [
-        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Me piden inglés para subir de puesto. Dolor: Ansiedad por perder crecimiento económico y desesperación de estancamiento." },
-        { id: "viajero", titulo: "Viajero Limitado", dolor: "Amo viajar pero no puedo comunicarme. Dolor: Sentirse inútil, depender de otros para comer; frustración." },
-        { id: "emigracion", titulo: "Emigración Próxima", dolor: "Voy a mudarme de país. Dolor: Pánico a un cambio radical y perder oportunidades." },
-        { id: "residente", titulo: "Residente en EE.UU.", dolor: "Ya vivo allá pero no hablo el idioma. Dolor: Aislamiento social y dificultad extrema." },
-        { id: "procrastinador", titulo: "Objetivo Postergado", dolor: "Meta personal de años. Dolor: Sentirse fatal por procrastinar." }
+        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Me piden inglés para subir de puesto. Dolor: Ansiedad por perder crecimiento económico y desesperación por estancamiento." },
+        { id: "viajero", titulo: "Viajero Limitado", dolor: "Amo viajar pero no puedo comunicarme. Dolor: Sentirse inútil, depender de otros para comer o moverse; frustración." },
+        { id: "emigracion", titulo: "Emigración Próxima", dolor: "Voy a mudarme de país. Dolor: Pánico a un cambio radical y perder oportunidades laborales." },
+        { id: "residente", titulo: "Residente en EE.UU.", dolor: "Ya vivo allá pero no hablo el idioma. Dolor: Aislamiento social y dificultad extrema en el día a día." },
+        { id: "procrastinador", titulo: "Objetivo Postergado", dolor: "Meta personal de años. Dolor: Sentirse fatal y 'aburrido' de uno mismo por procrastinar algo divertido." }
     ];
 
     const personalidades = {
@@ -37,6 +37,7 @@ function generarLead(config = {}) {
     const pais = paises[pKey] || paises["mexico"];
     const perfilKey = (config.type === "random" || !config.type) ? r(Object.keys(personalidades)) : config.type;
     const perfil = personalidades[perfilKey] || personalidades["ZAFIRO"];
+    const diff = config.difficulty || "normal";
     
     const historia = (config.situation === "random" || !config.situation) 
         ? r(historias) 
@@ -45,9 +46,9 @@ function generarLead(config = {}) {
     const esMujer = Math.random() > 0.5;
     const profesion = r(["Arquitecto", "Contador", "Vendedor", "Marketing", "Diseñador"]);
     const eventoOculto = r([
-        "Una vez perdí un ascenso internacional porque no pude responder una pregunta en inglés.",
+        "Una vez perdí un ascenso internacional porque en la reunión no pude responder una sola pregunta en inglés.",
         "En un viaje a Londres no supe pedir que me cambien la comida fría.",
-        "Perdí un cliente de 5.000 dólares porque no pude explicar mi propuesta.",
+        "Perdí un cliente de 5.000 dólares porque no pude explicar mi propuesta por Zoom.",
         "Pasé vergüenza en una entrevista de trabajo con una reclutadora de EE.UU."
     ]);
 
@@ -57,31 +58,49 @@ function generarLead(config = {}) {
         desc: `${historia.titulo} • Perfil ${perfilKey} • ${pais.nombre}`,
         pais: pais.nombre,
         perfil: perfilKey,
-        dolor: historia.dolor
+        dolor: historia.dolor,
+        objetivo: "Lograr libertad absoluta, seguridad profesional y ser bilingüe.",
+        eventoOculto: eventoOculto
     };
 
+    // Instruction logic for Difficulty
+    let diffInstr = "";
+    if (diff === "facil") {
+        diffInstr = "Nivel: FÁCIL. Eres más amable y propenso a aceptar. Solo lanza 1 objeción suave. Si el closer empatiza mínimamente, sube el Rapport mucho.";
+    } else if (diff === "dificil") {
+        diffInstr = "Nivel: DIFÍCIL. Eres extremadamente escéptico y directo. Lanza al menos 4 objeciones duras. NO cerrarás si falta CUALQUIER paso del ERANC (E, R, A, N, C).";
+    } else {
+        diffInstr = "Nivel: NORMAL. Lanza 3 objeciones reales. Comportamiento equilibrado.";
+    }
+
     const promptText = `
-1. EL PERSONAJE: Lead interesado en curso de inglés Academia Andy.
+1. EL PERSONAJE (Lead):
+- Nombre: ${leadPublic.name}
+- Perfil: ${perfil}
 - Situación: ${historia.dolor}
-- Personalidad [${perfilKey}]: ${perfil}
 - País: ${pais.nombre} (${pais.modismos})
-- Historia Oculta (Discovery): ${profesion}, ${eventoOculto}. (Revélalo solo ante buen discovery).
+- Historia Oculta (Discovery): Profesión ${profesion}, Evento: ${eventoOculto}. (Revélalo solo ante buen discovery).
+- Dificultad: ${diffInstr}
 
-2. DINÁMICA DE CIERRE (MÉTODO E-R-A-N-C):
-- E (Empatía), R (Reconfirmar interés/dolor), A (Aislar objeción), N (Negociar solución), C (Cerrar/Pago).
-- Resistencia: Lanza al menos 3 objeciones reales.
-
-3. REGLA DE RESPUESTA (IMPORTANTE):
-DEBES responder SIEMPRE en formato JSON con la siguiente estructura:
+2. CIERRE (ERANC): E (Empatía), R (Reconfirmar), A (Aislar), N (Negociar), C (Cerrar).
+3. RESPUESTA REQUERIDA (JSON):
 {
   "reply": "Tu respuesta como lead...",
   "metrics": {
-    "rapport": 0-100 (qué tan bien te cae el vendedor),
-    "discovery": 0-100 (qué tanto ha descubierto de tu dolor/historia oculta),
-    "mood": "Sentimiento actual (Enojado, Interesado, Escéptico, etc.)",
-    "phase": "Fase actual detectada del E-R-A-N-C (E | R | A | N | C | Ninguna)"
+    "rapport": 0-100,
+    "discovery": 0-100,
+    "mood": "...",
+    "eranc": {
+      "E": "red|yellow|green",
+      "R": "red|yellow|green",
+      "A": "red|yellow|green",
+      "N": "red|yellow|green",
+      "C": "red|yellow|green"
+    },
+    "sold": true/false
   }
 }
+*REGLA: "sold" es true SOLO si el closer hizo un cierre exitoso tras resolver tus objeciones.*
 `;
 
     return { leadPublic, promptText };
@@ -93,18 +112,10 @@ export default async function handler(req, res) {
 
     if (msg === "/start") {
         const { leadPublic, promptText } = generarLead(body.config);
-        const firstChat = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: promptText },
-                { role: "user", content: "Saluda al closer según tu personalidad." }
-            ],
-            response_format: { type: "json_object" }
-        });
-        const data = JSON.parse(firstChat.choices[0].message.content);
+        // Start without AI greeting (as per request)
         return res.json({
-            reply: data.reply,
-            metrics: data.metrics,
+            reply: "",
+            metrics: { rapport: 0, discovery: 0, mood: "Esperando inicio...", eranc: { E: "red", R: "red", A: "red", N: "red", C: "red" }, sold: false },
             lead: leadPublic,
             identidad: promptText 
         });
@@ -114,16 +125,9 @@ export default async function handler(req, res) {
         const text = body.text;
         const genero = body.genero;
         const voiceId = genero === "mujer" ? "EXAVITQu4vr4xnSDxMaL" : "pNInz6obpgmqMAr2W4mO";
-        
         if (ELEVEN_API_KEY && ELEVEN_API_KEY !== "YOUR_ELEVEN_API_KEY") {
             try {
-                const response = await axios({
-                    method: 'post',
-                    url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-                    data: { text: text, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.5, similarity_boost: 0.75 } },
-                    headers: { 'xi-api-key': ELEVEN_API_KEY, 'Content-Type': 'application/json', 'accept': 'audio/mpeg' },
-                    responseType: 'arraybuffer'
-                });
+                const response = await axios({ method: 'post', url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, data: { text: text, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.5, similarity_boost: 0.75 } }, headers: { 'xi-api-key': ELEVEN_API_KEY, 'Content-Type': 'application/json', 'accept': 'audio/mpeg' }, responseType: 'arraybuffer' });
                 return res.json({ audio: Buffer.from(response.data).toString('base64') });
             } catch (error) { console.error("Eleven Error"); }
         }
@@ -133,11 +137,8 @@ export default async function handler(req, res) {
 
     if (msg === "/audit") {
         const chatLog = body.historial?.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
-        const auditPrompt = `Analiza esta sesión de ventas (Lead: ${body.leadInfo?.name}). Entrega reporte 1-10 en Química, Discovery, Oferta, Objeciones. Plan de 3 pasos.`;
-        const ai = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [{ role: "system", content: auditPrompt }, { role: "user", content: chatLog }]
-        });
+        const auditPrompt = `Analiza sesión de ventas (Lead: ${body.leadInfo?.name}). Reporte 1-10 en Rapport, Discovery, Oferta, Objeciones. Plan 3 pasos.`;
+        const ai = await openai.chat.completions.create({ model: "gpt-4o", messages: [{ role: "system", content: auditPrompt }, { role: "user", content: chatLog }] });
         return res.json({ reply: ai.choices[0].message.content });
     }
 
@@ -145,11 +146,7 @@ export default async function handler(req, res) {
     try {
         const ai = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [
-                { role: "system", content: body.identidad },
-                ...body.historial,
-                { role: "user", content: msg }
-            ],
+            messages: [{ role: "system", content: body.identidad }, ...body.historial, { role: "user", content: msg }],
             response_format: { type: "json_object" }
         });
         const data = JSON.parse(ai.choices[0].message.content);

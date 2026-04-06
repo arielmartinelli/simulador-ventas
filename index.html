@@ -18,7 +18,7 @@
 
     <style>
         :root {
-            --bg-main: #020617; /* Deepest blue/black */
+            --bg-main: #020617;
             --bg-card: rgba(15, 23, 42, 0.6);
             --accent: #3b82f6;
             --accent-glow: rgba(59, 130, 246, 0.4);
@@ -26,13 +26,12 @@
             --text-secondary: #94a3b8;
             --glass-border: rgba(255, 255, 255, 0.05);
             --sidebar-width: 320px;
+            --color-red: #ef4444;
+            --color-yellow: #f59e0b;
+            --color-green: #10b981;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Outfit', sans-serif;
@@ -46,7 +45,7 @@
             background-image: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
         }
 
-        /* --- LEFT SIDEBAR --- */
+        /* --- SIDEBAR LEFT (BIO/TRANS) --- */
         .sidebar-left {
             grid-row: 1 / 3;
             border-right: 1px solid var(--glass-border);
@@ -62,32 +61,21 @@
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
             padding: 1.5rem;
-            border-radius: 24px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .bio-card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--accent); }
-        .bio-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
-
-        .transcript-wrap {
-            flex: 1;
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            overflow: hidden;
         }
 
+        .bio-card h2 { font-size: 1.25rem; color: var(--accent); }
+        .bio-section { display: flex; flex-direction: column; gap: 0.25rem; }
+        .bio-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
+        .bio-value { font-size: 0.85rem; line-height: 1.4; color: var(--text-primary); }
+
+        .transcript-wrap { flex: 1; display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
         .transcript-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; }
-
-        #transContent {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding-right: 0.5rem;
-        }
-
+        #transContent { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding-right: 0.5rem; }
         #transContent::-webkit-scrollbar { width: 4px; }
         #transContent::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
 
@@ -117,187 +105,139 @@
             box-shadow: 0 0 50px -10px var(--accent-glow);
         }
 
-        /* HUD Graphics */
-        .hud-bracket {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--accent);
-            opacity: 0.4;
-        }
+        .hud-bracket { position: absolute; width: 40px; height: 40px; border: 2px solid var(--accent); opacity: 0.4; }
         .tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
         .tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
         .bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
         .br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
 
         .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
+            position: absolute; width: 100%; height: 6px; 
             background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.1), transparent);
-            animation: scan 8s linear infinite;
-            z-index: 5;
+            animation: scan 8s linear infinite; z-index: 5;
         }
-
         @keyframes scan { from { top: -10%; } to { top: 110%; } }
 
+        .loading-glow {
+            position: absolute; inset: 0; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.3s; z-index: 1;
+        }
+        .loading-glow.active { opacity: 1; animation: pulsar-glow 1.5s infinite; }
+        @keyframes pulsar-glow { 0%, 100% { transform: scale(0.95); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.6; } }
+
+        .loading-text {
+            position: absolute; top: 2rem; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent);
+            opacity: 0; z-index: 20; transition: opacity 0.3s;
+        }
+        .loading-text.active { opacity: 1; }
+
         .avatar-wrap {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            padding: 6px;
+            width: 220px; height: 220px; border-radius: 50%; padding: 6px;
             background: linear-gradient(135deg, var(--accent), #8b5cf6);
-            position: relative;
-            z-index: 10;
-            transition: transform 0.4s ease;
+            position: relative; z-index: 10; transition: all 0.4s ease;
         }
         .avatar-wrap.talking { animation: talking-pulse 1.5s infinite; }
-        .avatar-wrap.paused { filter: grayscale(1) blur(2px) contrast(0.8); }
-
-        @keyframes talking-pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
-            50% { transform: scale(1.05); box-shadow: 0 0 40px 10px var(--accent-glow); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
-        }
+        .avatar-wrap.paused { filter: grayscale(1) blur(2px); opacity: 0.5; }
+        @keyframes talking-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); } 50% { transform: scale(1.05); box-shadow: 0 0 40px 10px var(--accent-glow); } 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); } }
 
         .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #0f172a; border: 4px solid #020617; overflow: hidden; }
         .avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Floating Controls */
         .floating-controls {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 1.5rem;
-            padding: 1rem 2rem;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border-radius: 99px;
-            border: 1px solid var(--glass-border);
-            z-index: 100;
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 1.5rem; padding: 1rem 2rem;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 99px; border: 1px solid var(--glass-border); z-index: 100;
         }
 
         .btn {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.05);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            cursor: pointer;
-            transition: 0.2s;
+            width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.2s;
         }
-
         .btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: translateY(-3px); }
         .btn.active { background: var(--accent); color: white; box-shadow: 0 0 20px var(--accent-glow); }
-        .btn.danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
-        .btn.danger:hover { background: #ef4444; color: white; }
+        .btn.danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
 
-        /* --- RIGHT SIDEBAR (METRICS) --- */
+        /* --- SIDEBAR RIGHT (METRICS) --- */
         .sidebar-right {
             border-left: 1px solid var(--glass-border);
-            background: rgba(2, 6, 23, 0.4);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
+            background: rgba(2, 6, 23, 0.4); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 2rem;
         }
 
-        .metric-group {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
+        .metric-group { display: flex; flex-direction: column; gap: 1rem; }
         .metric-title { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
 
         .progress-circle-wrap { width: 140px; height: 140px; margin: 0 auto; position: relative; }
         .progress-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .circle-bg { fill: none; stroke: var(--glass-border); stroke-width: 8; }
         .circle-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 0.8s ease-out; }
-
         .progress-value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 
-        .mood-tag {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            border: 1px solid var(--accent-glow);
-        }
+        .mood-tag { background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 0.5rem 1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid var(--accent-glow); }
 
-        .eranc-meter {
-            display: flex;
-            justify-content: space-between;
-            padding: 1rem;
-            background: #020617;
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-        }
-
+        .eranc-meter { display: flex; justify-content: space-between; padding: 1rem; background: #020617; border-radius: 16px; border: 1px solid var(--glass-border); }
         .eranc-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #475569;
-            transition: 0.3s;
+            width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.02);
+            display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #475569; transition: 0.4s;
         }
-        .eranc-dot.active { background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent-glow); }
+        .eranc-dot.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .eranc-dot.yellow { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+        .eranc-dot.green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
 
-        /* --- SCREENS --- */
+        /* Sale Banner */
+        .sale-banner {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 2000;
+            display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .sale-card {
+            background: rgba(16, 185, 129, 0.1); border: 2px solid var(--color-green); padding: 4rem; border-radius: 40px;
+            text-align: center; box-shadow: 0 0 100px rgba(16, 185, 129, 0.3); animation: scaleUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .sale-card h1 { font-size: 4rem; color: var(--color-green); margin-bottom: 1rem; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* SCREENS */
         .screen {
-            position: fixed;
-            inset: 0;
-            background: rgba(2, 6, 23, 0.98);
-            backdrop-filter: blur(32px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem;
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(32px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; padding: 4rem;
         }
+        .config-box { max-width: 900px; width: 100%; }
+        #configScreen { display: flex; }
 
-        .config-box { max-width: 800px; width: 100%; }
-        #configScreen { display: flex; } /* Initial */
-
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
-        .config-card { background: var(--bg-card); padding: 2rem; border-radius: 24px; border: 1px solid var(--glass-border); }
-        .config-card h3 { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+        .config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+        .config-card { background: var(--bg-card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--glass-border); }
+        .config-card h3 { color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 0.1em; }
         select { width: 100%; background: #020617; color: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--glass-border); outline: none; }
 
-        .btn-start { width: 100%; padding: 1.5rem; background: var(--accent); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 1.2rem; cursor: pointer; margin-top: 2rem; }
-
-        .chat-bubble { padding: 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; animation: slideIn 0.3s ease-out; }
-        .bubble-user { background: var(--accent); color: white; border-bottom-right-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
-        .bubble-lead { background: var(--bg-card); border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .chat-bubble { padding: 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; }
+        .bubble-user { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bubble-lead { background: var(--bg-card); align-self: flex-start; border-bottom-left-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- LEFT SIDE -->
+    <!-- LEFT SIDEBAR -->
     <aside class="sidebar-left">
-        <div class="bio-card">
-            <h2 id="leadName">--</h2>
-            <p id="leadDesc">Selecciona un perfil para comenzar el entrenamiento...</p>
+        <div class="bio-card" id="leadBio">
+            <h2 id="leadName">Esperando...</h2>
+            
+            <div class="bio-section">
+                <span class="bio-label">Situación Actual</span>
+                <span id="bioPain" class="bio-value">--</span>
+            </div>
+            
+            <div class="bio-section">
+                <span class="bio-label">Meta Final</span>
+                <span id="bioGoal" class="bio-value">--</span>
+            </div>
+
+            <div class="bio-section">
+                <span class="bio-label">Perfil / Gema</span>
+                <span id="bioType" class="bio-value">--</span>
+            </div>
         </div>
 
         <div class="transcript-wrap">
@@ -306,74 +246,57 @@
         </div>
     </aside>
 
-    <!-- CENTER -->
+    <!-- MAIN CENTER -->
     <main class="main-stage">
-        
         <div class="hud-video-box">
             <div class="hud-bracket tl"></div>
             <div class="hud-bracket tr"></div>
             <div class="hud-bracket bl"></div>
             <div class="hud-bracket br"></div>
+            <div id="loadingGlow" class="loading-glow"></div>
+            <div id="loadingText" class="loading-text">Analizando Señal...</div>
             <div class="scan-line"></div>
             
             <div id="avatarWrap" class="avatar-wrap">
                 <div class="avatar-inner">
-                    <img id="avatarImg" src="" alt="Lead Avatar">
+                    <img id="avatarImg" src="" alt="Avatar">
                 </div>
             </div>
         </div>
 
         <div class="floating-controls">
-            <button onclick="togglePause()" id="pauseBtn" class="btn" title="Pausar Sesión">
-                <i id="pauseIcon" class="ph-fill ph-pause"></i>
-            </button>
-
-            <button onclick="toggleLive()" id="talkBtn" class="btn active" style="width: 72px; height: 72px; background: var(--accent); margin-top: -10px;" title="Hablar">
-                <i id="micIcon" class="ph-fill ph-microphone"></i>
-            </button>
-
-            <button onclick="reset()" class="btn" title="Reiniciar">
-                <i class="ph ph-arrow-counter-clockwise"></i>
-            </button>
-
-            <button onclick="audit()" class="btn" title="Auditoría Final">
-                <i class="ph ph-trend-up"></i>
-            </button>
+            <button onclick="togglePause()" id="pauseBtn" class="btn" title="Pausar Sesión"><i id="pauseIcon" class="ph-fill ph-pause"></i></button>
+            <button onclick="toggleLive()" id="talkBtn" class="btn active" style="width: 72px; height: 72px; background: var(--accent); margin-top: -10px;"><i id="micIcon" class="ph-fill ph-microphone"></i></button>
+            <button onclick="reset()" class="btn" title="Reiniciar"><i class="ph ph-arrow-counter-clockwise"></i></button>
+            <button onclick="audit()" class="btn" title="Análisis Final"><i class="ph ph-trend-up"></i></button>
         </div>
     </main>
 
-    <!-- RIGHT SIDE -->
+    <!-- RIGHT SIDEBAR (ANALITYCS) -->
     <aside class="sidebar-right">
-        
         <div class="metric-group">
-            <div class="metric-title">Nivel de Rapport</div>
+            <div class="metric-title">Conexión / Rapport</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg">
-                    <circle class="circle-bg" cx="70" cy="70" r="60"></circle>
-                    <circle id="rapportBar" class="circle-bar" cx="70" cy="70" r="60"></circle>
-                </svg>
+                <svg class="progress-svg"><circle class="circle-bg" cx="70" cy="70" r="60"></circle><circle id="rapportBar" class="circle-bar" cx="70" cy="70" r="60"></circle></svg>
                 <div id="rapportValue" class="progress-value">0%</div>
             </div>
         </div>
 
         <div class="metric-group">
-            <div class="metric-title">Progreso Discovery</div>
+            <div class="metric-title">Descubrimiento (Discovery)</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg">
-                    <circle class="circle-bg" cx="70" cy="70" r="60"></circle>
-                    <circle id="discoveryBar" class="circle-bar" cx="70" cy="70" r="60" style="stroke: #10b981;"></circle>
-                </svg>
+                <svg class="progress-svg"><circle class="circle-bg" cx="70" cy="70" r="60"></circle><circle id="discoveryBar" class="circle-bar" cx="70" cy="70" r="60" style="stroke: #10b981;"></circle></svg>
                 <div id="discoveryValue" class="progress-value">0%</div>
             </div>
         </div>
 
         <div class="metric-group">
-            <div class="metric-title">Humor del Prospecto</div>
+            <div class="metric-title">Estado del Lead</div>
             <div id="moodTag" class="mood-tag">Neutral</div>
         </div>
 
         <div class="metric-group">
-            <div class="metric-title">Fase E-R-A-N-C</div>
+            <div class="metric-title">Metodología E-R-A-N-C</div>
             <div class="eranc-meter">
                 <div class="eranc-dot" data-phase="E">E</div>
                 <div class="eranc-dot" data-phase="R">R</div>
@@ -382,67 +305,32 @@
                 <div class="eranc-dot" data-phase="C">C</div>
             </div>
         </div>
-
     </aside>
+
+    <!-- SALE BANNER -->
+    <div id="saleBanner" class="sale-banner">
+        <div class="sale-card">
+            <i class="ph-fill ph-check-circle" style="font-size: 6rem; color: var(--color-green); margin-bottom: 2rem;"></i>
+            <h1>VENTA REALIZADA</h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary);">El lead ha sacado su tarjeta. Cierre exitoso.</p>
+            <button onclick="audit()" class="btn-start" style="margin-top: 3rem;">Ver Análisis del Coach</button>
+        </div>
+    </div>
 
     <!-- CONFIG SCREEN -->
     <div id="configScreen" class="screen">
         <div class="config-box">
-            <h1 style="font-size: 2.5rem; text-align: center; margin-bottom: 3rem;">Inicia Entrenamiento Pro</h1>
+            <h1 style="text-align: center; margin-bottom: 3rem; font-size: 3rem;">Simulador Pro v2</h1>
             
             <div class="config-grid">
-                <div class="config-card">
-                    <h3>Perfil de Lead</h3>
-                    <select id="leadType">
-                        <option value="random">Aleatorio</option>
-                        <option value="ZAFIRO">Zafiro (Dinámico)</option>
-                        <option value="PERLA">Perla (Calmado)</option>
-                        <option value="ESMERALDA">Esmeralda (Analítico)</option>
-                        <option value="RUBÍ">Rubí (Ambicioso)</option>
-                    </select>
-                </div>
-                <div class="config-card">
-                    <h3>Motivación / Situación</h3>
-                    <select id="leadSit">
-                        <option value="random">Cualquiera</option>
-                        <option value="ascenso">Ascenso</option>
-                        <option value="viajero">Viajes</option>
-                        <option value="emigracion">Mudanza</option>
-                        <option value="residente">Residente EE.UU.</option>
-                    </select>
-                </div>
-                <div class="config-card">
-                    <h3>Objeción Forzada</h3>
-                    <select id="leadObj">
-                        <option value="random">Aleatoria</option>
-                        <option value="pareja">Pareja</option>
-                        <option value="dinero">Dinero</option>
-                        <option value="pensar">Tiempo/Pensar</option>
-                    </select>
-                </div>
-                <div class="config-card">
-                    <h3>País de Origen</h3>
-                    <select id="leadCountry">
-                        <option value="random">Aleatorio (LATAM)</option>
-                        <option value="mexico">México</option>
-                        <option value="argentina">Argentina</option>
-                        <option value="colombia">Colombia</option>
-                    </select>
-                </div>
+                <div class="config-card"><h3>Personalidad</h3><select id="lType"><option value="random">Aleatoria</option><option value="ZAFIRO">Zafiro</option><option value="PERLA">Perla</option><option value="ESMERALDA">Esmeralda</option><option value="RUBÍ">Rubí</option></select></div>
+                <div class="config-card"><h3>Situación</h3><select id="lSit"><option value="random">Cualquiera</option><option value="ascenso">Ascenso</option><option value="viajero">Viajero</option><option value="emigracion">Mudanza</option><option value="residente">Residente EE.UU.</option></select></div>
+                <div class="config-card"><h3>Dificultad</h3><select id="lDiff"><option value="normal">Normal</option><option value="facil">Fácil</option><option value="dificil">Difícil / Pro</option></select></div>
+                <div class="config-card"><h3>País</h3><select id="lCountry"><option value="random">Aleatorio</option><option value="mexico">México</option><option value="argentina">Argentina</option><option value="colombia">Colombia</option></select></div>
+                <div class="config-card"><h3>Objeción</h3><select id="lObj"><option value="random">Aleatoria</option><option value="pareja">Pareja</option><option value="dinero">Precio/Dinero</option><option value="pensar">Lo tengo que pensar</option></select></div>
             </div>
 
-            <button class="btn-start" onclick="start()">Comenzar Role-Play</button>
-        </div>
-    </div>
-
-    <!-- AUDIT SCREEN -->
-    <div id="auditScreen" class="screen">
-        <div class="config-box" style="background: var(--bg-card); padding: 3rem; border-radius: 32px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h1>Auditoría del Coach</h1>
-                <button onclick="reset()" class="btn"><i class="ph ph-x"></i></button>
-            </div>
-            <div id="auditResult" style="white-space: pre-wrap; font-family: 'JetBrains Mono'; color: var(--text-secondary); line-height: 1.8;"></div>
+            <button class="btn-start" onclick="start()">Inicializar Videollamada</button>
         </div>
     </div>
 
@@ -454,124 +342,66 @@
         let isPaused = false;
         let audio = null;
 
-        // Recognition Setup
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         let rec = SR ? new SR() : null;
         if (rec) {
             rec.lang = "es-AR"; rec.continuous = true;
-            rec.onresult = (e) => {
-                if (isPaused) return;
-                const text = e.results[e.results.length - 1][0].transcript;
-                process(text);
-            };
+            rec.onresult = (e) => { if (!isPaused) process(e.results[e.results.length - 1][0].transcript); };
             rec.onend = () => { if (isRec && !isPaused) rec.start(); };
         }
 
         async function start() {
-            const config = {
-                type: document.getElementById('leadType').value,
-                situation: document.getElementById('leadSit').value,
-                objection: document.getElementById('leadObj').value,
-                country: document.getElementById('leadCountry').value
-            };
-
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "/start", config })
-            });
+            const config = { type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
             const data = await res.json();
             
             leadData = data.lead;
             ident = data.identidad;
             document.getElementById('leadName').innerText = leadData.name;
-            document.getElementById('leadDesc').innerText = leadData.desc;
+            document.getElementById('bioPain').innerText = leadData.dolor;
+            document.getElementById('bioGoal').innerText = leadData.objetivo;
+            document.getElementById('bioType').innerText = leadData.perfil;
             document.getElementById('configScreen').style.display = 'none';
 
             updateMetrics(data.metrics);
-            addMsg("lead", data.reply);
-            clientHistory.push({ role: "assistant", content: data.reply });
-            speak(data.reply);
-
-            // Set Avatar
             const seed = leadData.genero === 'mujer' ? 'Sophia' : 'James';
             document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
             
-            toggleLive(); // Start mic automatically
-        }
-
-        function toggleLive() {
-            if (!rec) return;
-            const icon = document.getElementById('micIcon');
-            const btn = document.getElementById('talkBtn');
-            if (!isRec) {
-                rec.start(); isRec = true;
-                btn.classList.add('active');
-                icon.className = "ph-fill ph-circles-three-plus ph-spin";
-            } else {
-                rec.stop(); isRec = false;
-                btn.classList.remove('active');
-                icon.className = "ph-fill ph-microphone";
-            }
-        }
-
-        function togglePause() {
-            isPaused = !isPaused;
-            const btn = document.getElementById('pauseBtn');
-            const icon = document.getElementById('pauseIcon');
-            const avatar = document.getElementById('avatarWrap');
-
-            if (isPaused) {
-                if (audio) audio.pause();
-                if (rec) rec.stop();
-                btn.classList.add('active');
-                icon.className = "ph-fill ph-play";
-                avatar.classList.add('paused');
-            } else {
-                if (audio && audio.currentTime > 0) audio.play();
-                if (isRec && rec) rec.start();
-                btn.classList.remove('active');
-                icon.className = "ph-fill ph-pause";
-                avatar.classList.remove('paused');
-            }
+            toggleLive(); 
         }
 
         async function process(text) {
             if (isPaused) return;
             addMsg("user", text);
+            setLoading(true);
             
             const res = await fetch("/api/chat", {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: text, historial: clientHistory, identidad: ident })
             });
             const data = await res.json();
+            setLoading(false);
 
             clientHistory.push({ role: "user", content: text });
             clientHistory.push({ role: "assistant", content: data.reply });
 
             addMsg("lead", data.reply);
             updateMetrics(data.metrics);
+            if (data.metrics.sold) document.getElementById('saleBanner').style.display = 'flex';
             speak(data.reply);
         }
 
         function updateMetrics(m) {
             if (!m) return;
-            // Rapport
-            const rOffset = 440 - (440 * m.rapport / 100);
-            document.getElementById('rapportBar').style.strokeDashoffset = rOffset;
+            document.getElementById('rapportBar').style.strokeDashoffset = 440 - (440 * m.rapport / 100);
             document.getElementById('rapportValue').innerText = m.rapport + "%";
-
-            // Discovery
-            const dOffset = 440 - (440 * m.discovery / 100);
-            document.getElementById('discoveryBar').style.strokeDashoffset = dOffset;
+            document.getElementById('discoveryBar').style.strokeDashoffset = 440 - (440 * m.discovery / 100);
             document.getElementById('discoveryValue').innerText = m.discovery + "%";
-
-            // Mood
             document.getElementById('moodTag').innerText = m.mood;
 
-            // Phase
             document.querySelectorAll('.eranc-dot').forEach(dot => {
-                dot.classList.toggle('active', dot.dataset.phase === m.phase);
+                const status = m.eranc?.[dot.dataset.phase] || "red";
+                dot.className = `eranc-dot ${status}`;
             });
         }
 
@@ -579,16 +409,33 @@
             const avatar = document.getElementById('avatarWrap');
             avatar.classList.add('talking');
             
-            const res = await fetch("/api/chat", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "/voice", text: text, genero: leadData.genero })
-            });
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/voice", text, genero: leadData.genero }) });
             const data = await res.json();
             
             if (audio) audio.pause();
             audio = new Audio("data:audio/mp3;base64," + data.audio);
             audio.onended = () => avatar.classList.remove('talking');
             if (!isPaused) audio.play();
+        }
+
+        function toggleLive() {
+            if (!rec) return;
+            const icon = document.getElementById('micIcon');
+            if (!isRec) { rec.start(); isRec = true; icon.className = "ph-fill ph-circles-three-plus ph-spin"; } 
+            else { rec.stop(); isRec = false; icon.className = "ph-fill ph-microphone"; }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const icon = document.getElementById('pauseIcon');
+            const avatar = document.getElementById('avatarWrap');
+            if (isPaused) { if (audio) audio.pause(); if (rec) rec.stop(); icon.className = "ph-fill ph-play"; avatar.classList.add('paused'); }
+            else { if (audio && audio.currentTime > 0) audio.play(); if (isRec) rec.start(); icon.className = "ph-fill ph-pause"; avatar.classList.remove('paused'); }
+        }
+
+        function setLoading(val) {
+            document.getElementById('loadingGlow').classList.toggle('active', val);
+            document.getElementById('loadingText').classList.toggle('active', val);
         }
 
         function addMsg(role, text) {
@@ -602,10 +449,8 @@
 
         async function audit() {
             document.getElementById('auditScreen').style.display = 'flex';
-            const res = await fetch("/api/chat", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData })
-            });
+            document.getElementById('saleBanner').style.display = 'none';
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) });
             const data = await res.json();
             document.getElementById('auditResult').innerText = data.reply;
         }
