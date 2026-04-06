@@ -1,340 +1,355 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>IA Role Play</title>
+    <meta charset="UTF-8">
+    <title>IA Role Play</title>
 
-<meta property="og:title" content="Closers PRO - Simulador de Ventas con IA">
-<meta property="og:description" content="Entrená cierres reales con clientes que dudan, objetan y reaccionan como en la vida real.">
-<meta property="og:image" content="https://i.postimg.cc/6qwyysSQ/f0a92198-9225-46d9-b267-c958ff5b87c7-(1).png">
-<meta property="og:type" content="website">
+    <meta property="og:title" content="Closers PRO - Simulador de Ventas con IA">
+    <meta property="og:description"
+        content="Entrená cierres reales con clientes que dudan, objetan y reaccionan como en la vida real.">
+    <meta property="og:image" content="https://i.postimg.cc/6qwyysSQ/f0a92198-9225-46d9-b267-c958ff5b87c7-(1).png">
+    <meta property="og:type" content="website">
 
-<link rel="icon" type="image/png" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-<style>
-body{
-margin:0;
-font-family:Inter;
-background:#0f172a;
-color:white;
-display:flex;
-flex-direction:column;
-height:100vh;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: Inter;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-.header{
-padding:20px;
-display:flex;
-justify-content:space-between;
-}
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-.stage{
-flex:1;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-}
+        .stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-.video-card{
-width:700px;
-height:55vh;
-background:#1e293b;
-border-radius:24px;
-display:flex;
-justify-content:center;
-align-items:center;
-}
+        .video-card {
+            width: 700px;
+            height: 55vh;
+            background: #1e293b;
+            border-radius: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-.avatar{
-width:140px;
-height:140px;
-border-radius:50%;
-overflow:hidden;
-}
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
 
-.talking .avatar{
-animation:glow 1s infinite alternate;
-}
+        .talking .avatar {
+            animation: glow 1s infinite alternate;
+        }
 
-@keyframes glow{
-0%{box-shadow:0 0 10px rgba(59,130,246,.3)}
-100%{box-shadow:0 0 40px rgba(59,130,246,.8)}
-}
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 10px rgba(59, 130, 246, .3)
+            }
 
-/* BOTONES */
-.controls {
-display:flex;
-justify-content:center;
-gap:18px;
-padding:30px;
-}
+            100% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, .8)
+            }
+        }
 
-.btn {
-width:48px;
-height:48px;
-border-radius:50%;
-background:rgba(30,41,59,0.8);
-border:1px solid rgba(255,255,255,0.08);
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-color:white;
-font-size:18px;
-transition:.2s;
-}
+        /* BOTONES */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            padding: 30px;
+        }
 
-.btn:hover{
-transform:scale(1.08);
-}
+        .btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 18px;
+            transition: .2s;
+        }
 
-.btn-talk{
-width:64px;
-height:64px;
-background:#3b82f6;
-font-size:22px;
-}
+        .btn:hover {
+            transform: scale(1.08);
+        }
 
-/* 🔥 ESTADO ACTIVO */
-.btn-talk.active{
-background:#ef4444;
-animation:pulse 1.4s infinite;
-}
+        .btn-talk {
+            width: 64px;
+            height: 64px;
+            background: #3b82f6;
+            font-size: 22px;
+        }
 
-@keyframes pulse{
-0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}
-70%{box-shadow:0 0 0 18px rgba(239,68,68,0)}
-}
+        /* 🔥 ESTADO ACTIVO */
+        .btn-talk.active {
+            background: #ef4444;
+            animation: pulse 1.4s infinite;
+        }
 
-/* SCREENS */
-.screen{
-position:fixed;
-inset:0;
-background:#0f172a;
-display:none;
-padding:30px;
-overflow:auto;
-font-family:"JetBrains Mono";
-z-index:999;
-}
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, .7)
+            }
 
-.close{
-margin-top:20px;
-padding:10px;
-background:#1e293b;
-border:none;
-color:white;
-cursor:pointer;
-}
-</style>
+            70% {
+                box-shadow: 0 0 0 18px rgba(239, 68, 68, 0)
+            }
+        }
+
+        /* SCREENS */
+        .screen {
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            display: none;
+            padding: 30px;
+            overflow: auto;
+            font-family: "JetBrains Mono";
+            z-index: 999;
+        }
+
+        .close {
+            margin-top: 20px;
+            padding: 10px;
+            background: #1e293b;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 
-<header class="header">
-<div>🎯 Closers PRO</div>
-<div id="status">Listo</div>
-</header>
+    <header class="header">
+        <div>🎯 Closers PRO</div>
+        <div id="status">Listo</div>
+    </header>
 
-<main class="stage">
+    <main class="stage">
 
-<div id="leadName"></div>
-<div id="leadDesc"></div>
+        <div id="leadName"></div>
+        <div id="leadDesc"></div>
 
-<div id="avatarWrap" class="video-card">
-<div class="avatar">
-<img id="avatarImg">
-</div>
-</div>
+        <div id="avatarWrap" class="video-card">
+            <div class="avatar">
+                <img id="avatarImg">
+            </div>
+        </div>
 
-</main>
+    </main>
 
-<footer class="controls">
+    <footer class="controls">
 
-<div class="btn" onclick="reset()">
-<i class="ph ph-arrow-counter-clockwise"></i>
-</div>
+        <div class="btn" onclick="reset()">
+            <i class="ph ph-arrow-counter-clockwise"></i>
+        </div>
 
-<div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">
-<i id="micIcon" class="ph-fill ph-microphone"></i>
-</div>
+        <div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">
+            <i id="micIcon" class="ph-fill ph-microphone"></i>
+        </div>
 
-<div class="btn" onclick="abrirTrans()">
-<i class="ph ph-text-align-left"></i>
-</div>
+        <div class="btn" onclick="abrirTrans()">
+            <i class="ph ph-text-align-left"></i>
+        </div>
 
-<div class="btn" onclick="abrirAudit()">
-<i class="ph ph-chart-line-up"></i>
-</div>
+        <div class="btn" onclick="abrirAudit()">
+            <i class="ph ph-chart-line-up"></i>
+        </div>
 
-</footer>
+    </footer>
 
-<!-- TRANS -->
-<div id="transScreen" class="screen">
-<h2>Transcripción</h2>
-<div id="transContent"></div>
-<button class="close" onclick="cerrar('transScreen')">Volver</button>
-</div>
+    <!-- TRANS -->
+    <div id="transScreen" class="screen">
+        <h2>Transcripción</h2>
+        <div id="transContent"></div>
+        <button class="close" onclick="cerrar('transScreen')">Volver</button>
+    </div>
 
-<!-- AUDIT -->
-<div id="auditScreen" class="screen">
-<h2>Auditoría</h2>
-<pre id="auditContent"></pre>
-<button class="close" onclick="cerrar('auditScreen')">Volver</button>
-</div>
+    <!-- AUDIT -->
+    <div id="auditScreen" class="screen">
+        <h2>Auditoría</h2>
+        <pre id="auditContent"></pre>
+        <button class="close" onclick="cerrar('auditScreen')">Volver</button>
+    </div>
 
-<script>
-let historial = [];
-let escuchando = false;
-let hablandoIA = false;
-let leadGenero = "hombre";
-let audioActual = null;
+    <script>
+        let historial = [];
+        let escuchando = false;
+        let hablandoIA = false;
+        let leadGenero = "hombre";
+        let audioActual = null;
 
-avatarImg.src=`https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
+        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-// LEAD
-async function generarLead(){
-const res = await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/start"})
-});
-const data = await res.json();
+        // LEAD
+        async function generarLead() {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "/start" })
+            });
+            const data = await res.json();
 
-leadName.innerText = data.name;
-leadDesc.innerText = data.desc;
-leadGenero = data.genero;
-}
-generarLead();
+            leadName.innerText = data.name;
+            leadDesc.innerText = data.desc;
+            leadGenero = data.genero;
+        }
+        generarLead();
 
-// 🎤 RECONOCIMIENTO
-const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-rec.lang="es-AR";
-rec.continuous=true;
+        // 🎤 RECONOCIMIENTO
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = "es-AR";
+        rec.continuous = true;
 
-// 🔥 BOTÓN DINÁMICO
-function actualizarBoton(){
-if(escuchando){
-talkBtn.classList.add("active");
-micIcon.classList.replace("ph-microphone","ph-stop");
-}else{
-talkBtn.classList.remove("active");
-micIcon.classList.replace("ph-stop","ph-microphone");
-}
-}
+        // 🔥 BOTÓN DINÁMICO
+        function actualizarBoton() {
+            if (escuchando) {
+                talkBtn.classList.add("active");
+                micIcon.classList.replace("ph-microphone", "ph-stop");
+            } else {
+                talkBtn.classList.remove("active");
+                micIcon.classList.replace("ph-stop", "ph-microphone");
+            }
+        }
 
-function toggleLive(){
+        function toggleLive() {
 
-if(!escuchando){
-rec.start();
-escuchando=true;
-status.innerText="Escuchando...";
-}else{
-rec.stop();
-audioActual?.pause();
-escuchando=false;
-status.innerText="Pausado";
-}
+            if (!escuchando) {
+                rec.start();
+                escuchando = true;
+                status.innerText = "Escuchando...";
+            } else {
+                rec.stop();
+                audioActual?.pause();
+                escuchando = false;
+                status.innerText = "Pausado";
+            }
 
-actualizarBoton();
-}
+            actualizarBoton();
+        }
 
-// 🔥 SI SE CORTA SOLO
-rec.onend = ()=>{
-escuchando=false;
-actualizarBoton();
-};
+        // 🔥 SI SE CORTA SOLO
+        rec.onend = () => {
+            escuchando = false;
+            actualizarBoton();
+        };
 
-rec.onresult = async (e) => {
+        rec.onresult = async (e) => {
 
-const text = e.results[e.results.length-1][0].transcript;
+            const text = e.results[e.results.length - 1][0].transcript;
 
-if(hablandoIA){
-audioActual?.pause();
-avatarWrap.classList.remove("talking");
-hablandoIA=false;
-}
+            if (hablandoIA) {
+                audioActual?.pause();
+                avatarWrap.classList.remove("talking");
+                hablandoIA = false;
+            }
 
-historial.push({role:"user",text});
+            historial.push({ role: "user", text });
 
-const res = await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:text})
-});
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
+            });
 
-const data = await res.json();
+            const data = await res.json();
 
-historial.push({role:"lead",text:data.reply});
+            historial.push({ role: "lead", text: data.reply });
 
-hablarIA(data.reply, data.emocion);
-};
+            hablarIA(data.reply, data.emocion);
+        };
 
-async function hablarIA(texto, emocion){
+        async function hablarIA(texto, emocion) {
 
-hablandoIA = true;
-avatarWrap.classList.add("talking");
+            hablandoIA = true;
+            avatarWrap.classList.add("talking");
 
-const res = await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-message:"/voice",
-text:texto,
-genero:leadGenero
-})
-});
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: "/voice",
+                    text: texto,
+                    genero: leadGenero
+                })
+            });
 
-const data = await res.json();
+            const data = await res.json();
 
-audioActual = new Audio("data:audio/mp3;base64," + data.audio);
+            audioActual = new Audio("data:audio/mp3;base64," + data.audio);
 
-// velocidad humana
-if(emocion==="enojo") audioActual.playbackRate = 1.15;
-else if(emocion==="duda") audioActual.playbackRate = 0.85;
-else audioActual.playbackRate = 1;
+            // velocidad humana
+            if (emocion === "enojo") audioActual.playbackRate = 1.15;
+            else if (emocion === "duda") audioActual.playbackRate = 0.85;
+            else audioActual.playbackRate = 1;
 
-audioActual.play();
+            audioActual.play();
 
-audioActual.onended = ()=>{
-avatarWrap.classList.remove("talking");
-hablandoIA = false;
-};
-}
+            audioActual.onended = () => {
+                avatarWrap.classList.remove("talking");
+                hablandoIA = false;
+            };
+        }
 
-async function reset(){
-historial=[];
-await generarLead();
-}
+        async function reset() {
+            historial = [];
+            await generarLead();
+        }
 
-// TRANS
-function abrirTrans(){
-transScreen.style.display="block";
-transContent.innerHTML=
-historial.map(m=>`<div>${m.role==="user"?"TÚ":"LEAD"}: ${m.text}</div>`).join("");
-}
+        // TRANS
+        function abrirTrans() {
+            transScreen.style.display = "block";
+            transContent.innerHTML =
+                historial.map(m => `<div>${m.role === "user" ? "TÚ" : "LEAD"}: ${m.text}</div>`).join("");
+        }
 
-// AUDIT
-async function abrirAudit(){
-const r=await fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"/audit"})
-});
-const d=await r.json();
+        // AUDIT
+        async function abrirAudit() {
+            const r = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: "/audit" })
+            });
+            const d = await r.json();
 
-auditScreen.style.display="block";
-auditContent.innerText=d.reply;
-}
+            auditScreen.style.display = "block";
+            auditContent.innerText = d.reply;
+        }
 
-function cerrar(id){
-document.getElementById(id).style.display="none";
-}
-</script>
+        function cerrar(id) {
+            document.getElementById(id).style.display = "none";
+        }
+    </script>
 
 </body>
+
 </html>
