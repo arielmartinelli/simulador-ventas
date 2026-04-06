@@ -60,7 +60,6 @@ function generarLead(config = {}) {
     const ingresoActual = r(["800 USD", "1200 USD", "1500 USD", "2000 USD"]);
     const ingresoObjetivo = r(["2500 USD", "3500 USD", "5000 USD"]);
 
-    // FICHA DE CUALIFICACIÓN (Los 7 pasos que el lead ya respondió)
     const ficha = {
         paso1: `${profesion}, 28 años. Nos conoció por Instagram de Andy.`,
         paso2: historia.dolor,
@@ -81,39 +80,43 @@ function generarLead(config = {}) {
         product: { price: 1500, scholarship: 1000 }
     };
 
-    const objInstr = config.objection && config.objection !== "random" ? `Tu objeción principal es: "${objecionesDetalle[config.objection] || config.objection}". Úsala con fuerza.` : "";
+    let diffInstr = "";
+    if (diff === "facil") {
+        diffInstr = "DIFICULTAD: 6/10 (Resistencia básica). Una sola objeción real. Cedes si el closer muestra interés genuino y empatía.";
+    } else if (diff === "dificil") {
+        diffInstr = "DIFICULTAD: 9/10 (Resistencia EXTREMA). Eres muy escéptico. Interrumpe, cuestiona los métodos y no perdonas el ruido o la falta de claridad. No compras a la primera.";
+    } else {
+        diffInstr = "DIFICULTAD: 7.5/10 (Resistencia MEDIA). Al menos 3 objeciones reales. Exiges que el closer use tus datos de cualificación.";
+    }
+
+    const objInstr = config.objection && config.objection !== "random" ? `Tu objeción principal BLOQUEANTE es: "${objecionesDetalle[config.objection] || config.objection}".` : "";
 
     const promptText = `
-1. EL PERSONAJE:
-Eres ${leadPublic.name} de ${pais.nombre} (${pais.modismos}). Ya fuite CUALIFICADO antes de esta llamada.
-DATOS QUE YA DISTE (Memoria de cualificación):
-- Profesión/Vida: ${ficha.paso1}
-- Dolor: ${ficha.paso2}
-- Intentos previos: ${ficha.paso3}
-- Si no haces nada: ${ficha.paso4}
-- ROI: Ganas ${ingresoActual}, buscas ganar ${ingresoObjetivo}.
-- Tiempo: Tienes ${ficha.paso7}.
-
-2. TU ESTADO ACTUAL:
-- Tienes INTENCIÓN DE COMPRAR, pero tienes dudas reales.
-- El Closer (${closerName}) te muestra la Academia Andy (Neurociencia, 1-on-1s, Discord, Live Classes).
+1. EL PERSONAJE (LEAD PURO):
+Eres ${leadPublic.name} de ${pais.nombre} (${pais.modismos}). ERES EL CLIENTE, NUNCA ACTUES COMO VENDEDOR NI AYUDES AL CLOSER.
+- Tu historia: ${ficha.paso1}. Dolor: ${ficha.paso2}. Meta economica: ${ingresoObjetivo}.
+- ${diffInstr}
 - ${objInstr}
-- Si el closer usa bien tus datos de cualificación para "limpiar" la duda, cede positivamente.
 
-3. CONOCIMIENTO DEL PRODUCTO:
-- Método: Neurociencia (sin gramática aburrida). Live Clases (66+ al mes). 1-on-1 (50 min, personalizado). Discord (Salas por niveles).
-- Garantía: Nivel B2 o devolución del 100%.
-- Precio: 1500€ (Beca de 1000€ disponible).
+2. REGLA DE CIERRE (MÁXIMO RIGOR):
+No marcas 'sold: true' hasta que se cumplan ESTAS DOS CONDICIONES:
+1) El closer solucionó DE MANERA EMOCIONAL Y LOGICA tu objeción (Limpieza total).
+2) El closer TE PIDIÓ EXPLÍCITAMENTE EL PAGO (CTA de cierre). Si el closer no te dice de pagar, tú no compras automáticamente aunque te guste el programa.
 
-4. LÓGICA DE CIERRE (Andy Script):
-- DINERO: Si dices "no tengo todo", el closer debería ofrecer Beca (1000€) o Financiación Interna ($700 + resto).
-- PAREJA: Si dices "hablar con mi pareja", el closer preguntará "¿Qué te diría ella?".
-- TIEMPO: Ya aceptaste que tienes 5h/semana.
+3. CONTEXTO ACADEMIA ANDY:
+- Neurociencia, 66+ Live Classes/mes, 1-on-1 (50m), Discord, Garantía B2.
+- Precio: 1000€ (Beca)/1500€ (Full). Financiación interna disponible ($700 ahora...).
 
-5. RESPUESTA REQUERIDA (JSON):
+4. RESPUESTA (JSON):
 {
-  "reply": "Tu respuesta...",
-  "metrics": { "rapport": 0-100, "discovery": 0-100, "mood": "...", "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" }, "sold": true/false }
+  "reply": "Tu respuesta como prospecto...",
+  "metrics": {
+    "rapport": 0-100,
+    "discovery": 0-100,
+    "mood": "...",
+    "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" },
+    "sold": true/false
+  }
 }
 `;
 
@@ -151,7 +154,7 @@ export default async function handler(req, res) {
 
     if (msg === "/audit") {
         const chatLog = body.historial?.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
-        const auditPrompt = `Analiza sesión basada en METODOLOGÍA ANDY. Evalúa Rapport, Discovery y scripts de objeciones (Pareja, Dinero, Tiempo). Reporte 1-10.`;
+        const auditPrompt = `Analiza sesión basada en METODOLOGÍA ANDY. Evalúa si el closer usó los datos de cualificación y si pidió el pago al final. Reporte 1-10.`;
         const ai = await openai.chat.completions.create({ model: "gpt-4o", messages: [{ role: "system", content: auditPrompt }, { role: "user", content: chatLog }] });
         return res.json({ reply: ai.choices[0].message.content });
     }
