@@ -466,7 +466,19 @@
                         <option value="RUBÍ">Rubí (Ambicioso, directo)</option>
                     </select>
                 </div>
-                
+
+                <div class="config-card">
+                    <h3>Situación / Motivación</h3>
+                    <select id="leadSituation">
+                        <option value="random">Aleatorio</option>
+                        <option value="ascenso">Ascenso Laboral</option>
+                        <option value="viajero">Viajero Limitado</option>
+                        <option value="emigracion">Emigración Próxima</option>
+                        <option value="residente">Residente en EE.UU.</option>
+                        <option value="procrastinador">Objetivo Postergado</option>
+                    </select>
+                </div>
+
                 <div class="config-card">
                     <h3>Objeción Inicial</h3>
                     <select id="initialObjection">
@@ -482,7 +494,7 @@
                 <div class="config-card">
                     <h3>Contexto LATAM</h3>
                     <select id="targetCountry">
-                        <option value="random">Aleatorio (México, Argentina, etc)</option>
+                        <option value="random">Aleatorio</option>
                         <option value="mexico">México</option>
                         <option value="argentina">Argentina</option>
                         <option value="colombia">Colombia</option>
@@ -553,6 +565,7 @@
         async function iniciarSesion() {
             const config = {
                 type: document.getElementById('leadType').value,
+                situation: document.getElementById('leadSituation').value,
                 objection: document.getElementById('initialObjection').value,
                 country: document.getElementById('targetCountry').value
             };
@@ -584,6 +597,9 @@
                 
                 const seed = data.genero === 'mujer' ? 'Sophia' : 'James';
                 document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
+
+                // TTS for the first message
+                reproducirVoz(data.reply);
 
             } catch (err) {
                 console.error(err);
