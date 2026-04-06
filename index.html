@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Simulator Pro | HUD Andy v4</title>
+    <title>Simulador de Ventas v4</title>
 
     <!-- SEO & Meta -->
-    <meta property="og:title" content="Sales Simulator Pro | IA Training">
+    <meta property="og:title" content="Simulador de Ventas v4">
     <meta property="og:image" content="/og-image.png">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
@@ -31,7 +34,11 @@
             --color-green: #10b981;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Outfit', sans-serif;
@@ -46,97 +53,617 @@
         }
 
         /* --- SIDEBAR LEFT (BIO/FICHA) --- */
-        .sidebar-left { grid-row: 1 / 3; border-right: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); backdrop-filter: blur(20px); display: flex; flex-direction: column; padding: 1.5rem; gap: 1rem; overflow: hidden; }
-        
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .tab-btn { flex: 1; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-secondary); font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .sidebar-left {
+            grid-row: 1 / 3;
+            border-right: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.4);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            gap: 1rem;
+            overflow: hidden;
+        }
 
-        #bioTabContent, #fichaTabContent { flex: 1; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
-        #fichaTabContent { display: none; }
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
 
-        .bio-card, .ficha-card { background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 16px; display: flex; flex-direction: column; gap: 0.75rem; }
-        .bio-card h2 { font-size: 1.15rem; color: var(--accent); }
-        .bio-section, .ficha-section { display: flex; flex-direction: column; gap: 2px; }
-        .bio-label, .ficha-label { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
-        .bio-value, .ficha-value { font-size: 0.8rem; line-height: 1.4; color: var(--text-primary); }
+        .tab-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
 
-        .transcript-wrap { height: 250px; display: flex; flex-direction: column; gap: 0.75rem; overflow: hidden; border-top: 1px solid var(--glass-border); padding-top: 1rem; }
-        .transcript-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; }
-        #transContent { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
-        #transContent::-webkit-scrollbar { width: 4px; }
-        #transContent::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        #bioTabContent,
+        #fichaTabContent {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        #fichaTabContent {
+            display: none;
+        }
+
+        .bio-card,
+        .ficha-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 1.25rem;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .bio-card h2 {
+            font-size: 1.15rem;
+            color: var(--accent);
+        }
+
+        .bio-section,
+        .ficha-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .bio-label,
+        .ficha-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .bio-value,
+        .ficha-value {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+
+        .transcript-wrap {
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            overflow: hidden;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 1rem;
+        }
+
+        .transcript-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+        }
+
+        #transContent {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #transContent::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #transContent::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
+        }
 
         /* --- MAIN CENTER --- */
-        .main-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; }
-        .timer-hud { position: absolute; top: 2rem; width: 300px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; display: none; }
-        #timerBar { height: 100%; width: 100%; background: var(--accent); transition: width 1s linear; }
+        .main-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
 
-        .hud-video-box { width: 100%; max-width: 650px; aspect-ratio: 16/10; background: var(--bg-card); border-radius: 32px; position: relative; display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 0 50px -10px var(--accent-glow); }
-        .hud-bracket { position: absolute; width: 40px; height: 40px; border: 2px solid var(--accent); opacity: 0.3; }
-        .tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
-        .tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
-        .bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
-        .br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
-        .scan-line { position: absolute; width: 100%; height: 6px; background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent); animation: scan 8s linear infinite; z-index: 5; }
-        @keyframes scan { from { top: -10%; } to { top: 110%; } }
+        .timer-hud {
+            position: absolute;
+            top: 2rem;
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
 
-        .avatar-wrap { width: 220px; height: 220px; border-radius: 50%; padding: 6px; background: linear-gradient(135deg, var(--accent), #8b5cf6); position: relative; z-index: 10; transition: all 0.4s; }
-        .avatar-wrap.talking { animation: talking-pulse 1.5s infinite; }
-        .avatar-wrap.paused { filter: grayscale(1) blur(4px) brightness(0.4); }
-        @keyframes talking-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px var(--accent-glow); } 100% { transform: scale(1); } }
-        .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #0f172a; border: 4px solid #020617; overflow: hidden; }
-        .avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+        #timerBar {
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            transition: width 1s linear;
+        }
 
-        .floating-controls { position: absolute; bottom: 2rem; display: flex; gap: 1rem; padding: 1rem 1.5rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 99px; border: 1px solid var(--glass-border); z-index: 100; }
-        .btn { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
-        .btn.active { background: var(--accent); color: white; }
+        .hud-video-box {
+            width: 100%;
+            max-width: 650px;
+            aspect-ratio: 16/10;
+            background: var(--bg-card);
+            border-radius: 32px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            box-shadow: 0 0 50px -10px var(--accent-glow);
+        }
 
-        #helpBtn { background: #8b5cf6; position: absolute; top: 2rem; right: 2rem; border-radius: 12px; width: auto; padding: 0 1rem; font-size: 0.8rem; font-weight: 700; gap: 0.5rem; }
+        .hud-bracket {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--accent);
+            opacity: 0.3;
+        }
+
+        .tl {
+            top: 20px;
+            left: 20px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .tr {
+            top: 20px;
+            right: 20px;
+            border-left: 0;
+            border-bottom: 0;
+        }
+
+        .bl {
+            bottom: 20px;
+            left: 20px;
+            border-right: 0;
+            border-top: 0;
+        }
+
+        .br {
+            bottom: 20px;
+            right: 20px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent);
+            animation: scan 8s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes scan {
+            from {
+                top: -10%;
+            }
+
+            to {
+                top: 110%;
+            }
+        }
+
+        .avatar-wrap {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            padding: 6px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            position: relative;
+            z-index: 10;
+            transition: all 0.4s;
+        }
+
+        .avatar-wrap.talking {
+            animation: talking-pulse 1.5s infinite;
+        }
+
+        .avatar-wrap.paused {
+            filter: grayscale(1) blur(4px) brightness(0.4);
+        }
+
+        @keyframes talking-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px var(--accent-glow);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0f172a;
+            border: 4px solid #020617;
+            overflow: hidden;
+        }
+
+        .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .floating-controls {
+            position: absolute;
+            bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 99px;
+            border: 1px solid var(--glass-border);
+            z-index: 100;
+        }
+
+        .btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        #helpBtn {
+            background: #8b5cf6;
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            border-radius: 12px;
+            width: auto;
+            padding: 0 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            gap: 0.5rem;
+        }
 
         /* --- MODALS --- */
-        .modal { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(20px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 32px; max-width: 800px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 3rem; position: relative; }
-        .modal-content h1 { font-size: 2rem; color: var(--accent); margin-bottom: 2rem; }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        .modal-section h3 { font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1rem; border-left: 3px solid var(--accent); padding-left: 0.75rem; }
-        .modal-section p, .modal-section li { font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 0.5rem; }
-        .close-modal { position: absolute; top: 2rem; right: 2rem; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .modal-content h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .modal-section h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        .modal-section p,
+        .modal-section li {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
 
         /* --- RIGHT SIDEBAR --- */
-        .sidebar-right { border-left: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); padding: 2.5rem 1.75rem; display: flex; flex-direction: column; gap: 2rem; }
-        .metric-group { display: flex; flex-direction: column; gap: 0.75rem; }
-        .metric-title { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
-        .progress-circle-wrap { width: 120px; height: 120px; margin: 0 auto; position: relative; }
-        .progress-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-        .circle-bg { fill: none; stroke: var(--glass-border); stroke-width: 8; }
-        .circle-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.8s ease-out; }
-        .progress-value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-        .mood-tag { background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 0.5rem; border-radius: 99px; font-size: 0.8rem; text-align: center; border: 1px solid var(--accent-glow); font-weight: 600; }
-        .eranc-meter { display: flex; justify-content: space-between; padding: 0.8rem; background: #020617; border-radius: 12px; border: 1px solid var(--glass-border); }
-        .eranc-dot { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #475569; }
-        .eranc-dot.red { color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-        .eranc-dot.yellow { color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 10px rgba(245,158,11,0.2); }
-        .eranc-dot.green { color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+        .sidebar-right {
+            border-left: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.4);
+            padding: 2.5rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .metric-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .metric-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .progress-circle-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .progress-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: var(--glass-border);
+            stroke-width: 8;
+        }
+
+        .circle-bar {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 0.8s ease-out;
+        }
+
+        .progress-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .mood-tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            padding: 0.5rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            text-align: center;
+            border: 1px solid var(--accent-glow);
+            font-weight: 600;
+        }
+
+        .eranc-meter {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem;
+            background: #020617;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .eranc-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .eranc-dot.red {
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .eranc-dot.yellow {
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+
+        .eranc-dot.green {
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
 
         /* Screens */
-        .screen { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(40px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 2rem; }
-        .config-box { max-width: 900px; width: 100%; background: var(--bg-card); padding: 3rem; border-radius: 40px; border: 1px solid var(--glass-border); text-align: center; }
-        #configScreen { display: flex; }
-        .config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; text-align: left; }
-        .config-card h3 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; }
-        select, input { width: 100%; background: #020617; color: white; padding: 0.8rem; border-radius: 12px; border: 1px solid var(--glass-border); outline: none; }
-        .btn-start { width: 100%; padding: 1.25rem; background: var(--accent); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 1.25rem; cursor: pointer; margin-top: 2.5rem; }
+        .screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            backdrop-filter: blur(40px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
 
-        .sale-banner { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.96); z-index: 2050; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
-        .sale-card { background: rgba(16, 185, 129, 0.1); border: 2px solid var(--color-green); padding: 4rem; border-radius: 40px; text-align: center; box-shadow: 0 0 80px rgba(16,185,129,0.2); }
+        .config-box {
+            max-width: 900px;
+            width: 100%;
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
 
-        .chat-bubble { padding: 0.9rem; border-radius: 16px; font-size: 0.85rem; line-height: 1.5; margin-bottom: 1rem; }
-        .bubble-user { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .bubble-lead { background: var(--bg-card); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
+        #configScreen {
+            display: flex;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .config-card h3 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        select,
+        input {
+            width: 100%;
+            background: #020617;
+            color: white;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            outline: none;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 1.25rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            cursor: pointer;
+            margin-top: 2.5rem;
+        }
+
+        .sale-banner {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.96);
+            z-index: 2050;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .sale-card {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--color-green);
+            padding: 4rem;
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 0 80px rgba(16, 185, 129, 0.2);
+        }
+
+        .chat-bubble {
+            padding: 0.9rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .bubble-user {
+            background: var(--accent);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bubble-lead {
+            background: var(--bg-card);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
     </style>
 </head>
+
 <body>
 
     <!-- LEFT SIDEBAR -->
@@ -150,24 +677,34 @@
         <div id="bioTabContent">
             <div class="bio-card">
                 <h2 id="leadName">Esperando...</h2>
-                <div class="bio-section"><span class="bio-label">País</span><span id="leadPais" class="bio-value">--</span></div>
-                <div class="bio-section"><span class="bio-label">Perfil Gema</span><span id="leadPerfil" class="bio-value">--</span></div>
+                <div class="bio-section"><span class="bio-label">País</span><span id="leadPais"
+                        class="bio-value">--</span></div>
+                <div class="bio-section"><span class="bio-label">Perfil Gema</span><span id="leadPerfil"
+                        class="bio-value">--</span></div>
             </div>
             <div class="bio-card">
-                <div class="bio-section"><span class="bio-label">Situación Crítica</span><span id="bioPain" class="bio-value">--</span></div>
+                <div class="bio-section"><span class="bio-label">Situación Crítica</span><span id="bioPain"
+                        class="bio-value">--</span></div>
             </div>
         </div>
 
         <!-- Cualificación Tab -->
         <div id="fichaTabContent">
             <div class="ficha-card">
-                <div class="ficha-section"><span class="ficha-label">1. Profesión & Origen</span><span id="fP1" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">2. Dolor Emocional</span><span id="fP2" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">3. Intentos Previos</span><span id="fP3" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">4. Consecuencias</span><span id="fP4" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">5. Compromiso</span><span id="fP5" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">6. Impacto Económico</span><span id="fP6" class="ficha-value">--</span></div>
-                <div class="ficha-section"><span class="ficha-label">7. Tiempo Semanal</span><span id="fP7" class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">1. Profesión & Origen</span><span id="fP1"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">2. Dolor Emocional</span><span id="fP2"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">3. Intentos Previos</span><span id="fP3"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">4. Consecuencias</span><span id="fP4"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">5. Compromiso</span><span id="fP5"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">6. Impacto Económico</span><span id="fP6"
+                        class="ficha-value">--</span></div>
+                <div class="ficha-section"><span class="ficha-label">7. Tiempo Semanal</span><span id="fP7"
+                        class="ficha-value">--</span></div>
             </div>
         </div>
 
@@ -179,19 +716,30 @@
 
     <!-- CENTER -->
     <main class="main-stage">
-        <button id="helpBtn" class="btn" onclick="toggleModal('helpModal')"><i class="ph ph-book-open"></i> Manual Andy</button>
-        <div id="timerHud" class="timer-hud"><div id="timerBar"></div></div>
+        <button id="helpBtn" class="btn" onclick="toggleModal('helpModal')"><i class="ph ph-book-open"></i> Manual
+            Andy</button>
+        <div id="timerHud" class="timer-hud">
+            <div id="timerBar"></div>
+        </div>
 
         <div class="hud-video-box">
-            <div class="hud-bracket tl"></div><div class="hud-bracket tr"></div><div class="hud-bracket bl"></div><div class="hud-bracket br"></div>
+            <div class="hud-bracket tl"></div>
+            <div class="hud-bracket tr"></div>
+            <div class="hud-bracket bl"></div>
+            <div class="hud-bracket br"></div>
             <div id="loadingGlow" class="loading-glow"></div>
             <div class="scan-line"></div>
-            <div id="avatarWrap" class="avatar-wrap"><div class="avatar-inner"><img id="avatarImg" src="" alt="Lead Avatar"></div></div>
+            <div id="avatarWrap" class="avatar-wrap">
+                <div class="avatar-inner"><img id="avatarImg" src="" alt="Lead Avatar"></div>
+            </div>
         </div>
 
         <div class="floating-controls">
-            <button onclick="togglePause()" id="pauseBtn" class="btn"><i id="pauseIcon" class="ph-fill ph-pause"></i></button>
-            <button onclick="toggleLive()" id="talkBtn" class="btn active" style="width: 75px; height: 75px; background: var(--accent);"><i id="micIcon" class="ph-fill ph-microphone"></i></button>
+            <button onclick="togglePause()" id="pauseBtn" class="btn"><i id="pauseIcon"
+                    class="ph-fill ph-pause"></i></button>
+            <button onclick="toggleLive()" id="talkBtn" class="btn active"
+                style="width: 75px; height: 75px; background: var(--accent);"><i id="micIcon"
+                    class="ph-fill ph-microphone"></i></button>
             <button onclick="reset()" class="btn"><i class="ph ph-arrow-counter-clockwise"></i></button>
             <button onclick="audit()" class="btn"><i class="ph ph-trend-up"></i></button>
         </div>
@@ -202,75 +750,148 @@
         <div class="metric-group">
             <div class="metric-title">Conexión / Rapport</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg"><circle class="circle-bg" cx="60" cy="60" r="50"></circle><circle id="rapportBar" class="circle-bar" cx="60" cy="60" r="50"></circle></svg>
+                <svg class="progress-svg">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
+                    <circle id="rapportBar" class="circle-bar" cx="60" cy="60" r="50"></circle>
+                </svg>
                 <div id="rapportValue" class="progress-value">0%</div>
             </div>
         </div>
         <div class="metric-group">
             <div class="metric-title">Descubrimiento</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg"><circle class="circle-bg" cx="60" cy="60" r="50"></circle><circle id="discoveryBar" class="circle-bar" cx="60" cy="60" r="50" style="stroke: #10b981;"></circle></svg>
+                <svg class="progress-svg">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
+                    <circle id="discoveryBar" class="circle-bar" cx="60" cy="60" r="50" style="stroke: #10b981;">
+                    </circle>
+                </svg>
                 <div id="discoveryValue" class="progress-value">0%</div>
             </div>
         </div>
-        <div class="metric-group"><div class="metric-title">Estado Umbral</div><div id="moodTag" class="mood-tag">Neutral</div></div>
-        <div class="metric-group"><div class="metric-title">ERANC | Andy Script</div><div class="eranc-meter">
-            <div class="eranc-dot" data-phase="E">E</div><div class="eranc-dot" data-phase="R">R</div><div class="eranc-dot" data-phase="A">A</div><div class="eranc-dot" data-phase="N">N</div><div class="eranc-dot" data-phase="C">C</div>
-        </div></div>
+        <div class="metric-group">
+            <div class="metric-title">Estado Umbral</div>
+            <div id="moodTag" class="mood-tag">Neutral</div>
+        </div>
+        <div class="metric-group">
+            <div class="metric-title">ERANC</div>
+            <div class="eranc-meter">
+                <div class="eranc-dot" data-phase="E">E</div>
+                <div class="eranc-dot" data-phase="R">R</div>
+                <div class="eranc-dot" data-phase="A">A</div>
+                <div class="eranc-dot" data-phase="N">N</div>
+                <div class="eranc-dot" data-phase="C">C</div>
+            </div>
+        </div>
     </aside>
 
     <!-- MODAL MANUAL -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <i class="ph ph-x close-modal" onclick="toggleModal('helpModal')"></i>
-            <h1>Guía Andy Academy</h1>
-            <div class="modal-grid">
-                <div class="modal-section">
-                    <h3>Producto Andy</h3>
-                    <ul>
-                        <li><b>Metodología:</b> Neurociencia (adiós gramática pura).</li>
-                        <li><b>Live Classes:</b> 66+ clases al mes, speaking ilimitado.</li>
-                        <li><b>1-on-1:</b> Mentoría privada de 50 min. Adaptable.</li>
-                        <li><b>Discord:</b> Salas por niveles + "Ghost Professors".</li>
-                        <li><b>Garantía:</b> Nivel B2 certificado o devolución.</li>
-                    </ul>
+            <h1>Guía Conquer Languages
+                <div class="modal-grid">
+                    <div class="modal-section">
+                        <h3>Producto Languages
+                            <ul>
+                                <li><b>Metodología:</b> Neurociencia (adiós gramática pura).</li>
+                                <li><b>Live Classes:</b> 66+ clases al mes, speaking ilimitado.</li>
+                                <li><b>1-on-1:</b> Mentoría privada de 50 min. Adaptable.</li>
+                                <li><b>Discord:</b> Salas por niveles + "Ghost Professors".</li>
+                                <li><b>Garantía:</b> Nivel B2 certificado o devolución.</li>
+                            </ul>
+                    </div>
+                    <div class="modal-section">
+                        <h3>Precio & Becas</h3>
+                        <p><b>Contado:</b> 1500€ (Sin beca) / 1000€ (Con beca).</p>
+                        <p><b>Financiación:</b> Tarjeta de crédito (3, 6, 9, 12 meses).</p>
+                        <p><b>Interna (Andy Special):</b> $700 hoy y resto en cuotas negociadas.</p>
+                    </div>
                 </div>
-                <div class="modal-section">
-                    <h3>Precio & Becas</h3>
-                    <p><b>Contado:</b> 1500€ (Sin beca) / 1000€ (Con beca).</p>
-                    <p><b>Financiación:</b> Tarjeta de crédito (3, 6, 9, 12 meses).</p>
-                    <p><b>Interna (Andy Special):</b> $700 hoy y resto en cuotas negociadas.</p>
-                </div>
-                <div class="modal-section">
-                    <h3>Closing Drills</h3>
-                    <p><b>Dinero:</b> "Si el programa cumple, ¿el único tema es el pago?" -> Ofrecer Beca o Financiación Interna.</p>
-                    <p><b>Pareja:</b> "¿Qué te diría él/ella hoy? Si te apoya, ¿estarías dentro?"</p>
-                </div>
-            </div>
         </div>
     </div>
 
     <!-- OVERLAYS -->
-    <div id="saleBanner" class="sale-banner"><div class="sale-card"><h1>¡VENTA REALIZADA!</h1><button onclick="audit()" class="btn-start">Descargar Informe Andy</button></div></div>
-    <div id="timeoutScreen" class="screen"><div class="config-box"><h1>LLAMADA PERDIDA</h1><p>El prospecto se aburrió de esperar (60s). El silencio mata la venta.</p><button onclick="reset()" class="btn-start">Nueva Llamada</button></div></div>
+    <div id="saleBanner" class="sale-banner">
+        <div class="sale-card">
+            <h1>¡VENTA REALIZADA!</h1><button onclick="audit()" class="btn-start">Descargar Informe</button>
+        </div>
+    </div>
+    <div id="timeoutScreen" class="screen">
+        <div class="config-box">
+            <h1>LLAMADA PERDIDA</h1>
+            <p>El prospecto se aburrió de esperar (60s). El silencio mata la venta.</p><button onclick="reset()"
+                class="btn-start">Nueva Llamada</button>
+        </div>
+    </div>
 
     <!-- CONFIG -->
     <div id="configScreen" class="screen">
         <div class="config-box">
-            <h1>Andy Academy Simulator</h1>
+            <h1>Conquer Languages Simulator</h1>
             <div class="config-grid">
-                <div class="config-card"><h3>Tu Nombre</h3><input type="text" id="cName" placeholder="Tu nombre artístico..." required></div>
-                <div class="config-card"><h3>Dificultad</h3><select id="lDiff"><option value="normal">Normal</option><option value="facil">Fácil</option><option value="dificil">Difícil / Pro</option></select></div>
-                <div class="config-card"><h3>País Lead</h3><select id="lCountry"><option value="random">Aleatorio</option><option value="mexico">México</option><option value="argentina">Argentina</option><option value="colombia">Colombia</option><option value="chile">Chile</option><option value="peru">Perú</option><option value="costa_rica">Costa Rica</option></select></div>
-                <div class="config-card"><h3>Situación Cuali</h3><select id="lSit"><option value="random">Cualquiera</option><option value="ascenso">Ascenso Laboral</option><option value="viajero">Viajes</option><option value="emigracion">Emigración Próxima</option><option value="residente">Residente EE.UU.</option><option value="procrastinador">Objetivo Postergado</option></select></div>
-                <div class="config-card"><h3>Gema / Perfil</h3><select id="lType"><option value="ZAFIRO">Zafiro</option><option value="PERLA">Perla</option><option value="ESMERALDA">Esmeralda</option><option value="RUBÍ">Rubí</option></select></div>
-                <div class="config-card"><h3>Foco Objeción</h3><select id="lObj"><option value="random">Aleatoria</option><option value="dinero">Dinero / Caro</option><option value="tiempo">Falta de Tiempo</option><option value="pareja">Consultar Pareja</option><option value="confianza">Duda / Confianza</option><option value="presion">Siento Presión</option><option value="prueba">Quiero Prueba</option><option value="baja">Baja antes de 12 meses</option></select></div>
+                <div class="config-card">
+                    <h3>Tu Nombre</h3><input type="text" id="cName" placeholder="Tu nombre..." required>
+                </div>
+                <div class="config-card">
+                    <h3>Dificultad</h3><select id="lDiff">
+                        <option value="facil">Fácil</option>
+                        <option value="normal">Normal</option>
+                        <option value="dificil">Difícil / Pro</option>
+                    </select>
+                </div>
+                <div class="config-card">
+                    <h3>País Lead</h3><select id="lCountry">
+                        <option value="random">Aleatorio</option>
+                        <option value="mexico">México</option>
+                        <option value="argentina">Argentina</option>
+                        <option value="colombia">Colombia</option>
+                        <option value="chile">Chile</option>
+                        <option value="peru">Perú</option>
+                        <option value="costa_rica">Costa Rica</option>
+                    </select>
+                </div>
+                <div class="config-card">
+                    <h3>Situación Cuali</h3><select id="lSit">
+                        <option value="random">Cualquiera</option>
+                        <option value="ascenso">Ascenso Laboral</option>
+                        <option value="viajero">Viajes</option>
+                        <option value="emigracion">Emigración Próxima</option>
+                        <option value="residente">Residente EE.UU.</option>
+                        <option value="procrastinador">Objetivo Postergado</option>
+                    </select>
+                </div>
+                <div class="config-card">
+                    <h3>Gema / Perfil</h3><select id="lType">
+                        <option value="random">Cualquiera</option>
+                        <option value="ZAFIRO">Zafiro</option>
+                        <option value="PERLA">Perla</option>
+                        <option value="ESMERALDA">Esmeralda</option>
+                        <option value="RUBÍ">Rubí</option>
+                    </select>
+                </div>
+                <div class="config-card">
+                    <h3>Foco Objeción</h3><select id="lObj">
+                        <option value="random">Aleatoria</option>
+                        <option value="dinero">Dinero / Caro</option>
+                        <option value="tiempo">Falta de Tiempo</option>
+                        <option value="pareja">Consultar Pareja</option>
+                        <option value="confianza">Duda / Confianza</option>
+                        <option value="presion">Siento Presión</option>
+                        <option value="prueba">Quiero Prueba</option>
+                        <option value="baja">Baja antes de 12 meses</option>
+                    </select>
+                </div>
             </div>
             <button class="btn-start" onclick="start()">ENTRAR A LA LLAMADA</button>
         </div>
     </div>
 
-    <div id="auditScreen" class="screen"><div class="config-box" style="overflow-y: auto; max-height: 80vh;"><div id="auditResult" style="white-space: pre-wrap; font-family: 'JetBrains Mono';"></div><button onclick="reset()" class="btn-start">Finalizar Entreno</button></div></div>
+    <div id="auditScreen" class="screen">
+        <div class="config-box" style="overflow-y: auto; max-height: 80vh;">
+            <div id="auditResult" style="white-space: pre-wrap; font-family: 'JetBrains Mono';"></div><button
+                onclick="reset()" class="btn-start">Finalizar Entreno</button>
+        </div>
+    </div>
 
     <script>
         let clientHistory = [], ident = "", leadData = null, isRec = false, isPaused = false, audio = null;
@@ -294,16 +915,16 @@
         async function start() {
             const name = document.getElementById('cName').value || "Closer";
             const config = { closerName: name, type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
-            
+
             const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
             const data = await res.json();
-            
+
             leadData = data.lead; ident = data.identidad;
             document.getElementById('leadName').innerText = leadData.name;
             document.getElementById('leadPais').innerText = leadData.pais;
             document.getElementById('leadPerfil').innerText = leadData.perfil;
             document.getElementById('bioPain').innerText = leadData.ficha.paso2;
-            
+
             // Llenar ficha Andy
             document.getElementById('fP1').innerText = leadData.ficha.paso1;
             document.getElementById('fP2').innerText = leadData.ficha.paso2;
@@ -315,12 +936,12 @@
 
             document.getElementById('configScreen').style.display = 'none';
             updateMetrics(data.metrics);
-            
+
             const seed = leadData.genero === 'mujer' ? 'Sophia' : 'James';
-            document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
-            
+            document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random() * 100)}`;
+
             document.getElementById('timerHud').style.display = 'block';
-            resetTimer(); 
+            resetTimer();
         }
 
         function resetTimer() {
@@ -379,4 +1000,5 @@
         function reset() { window.location.reload(); }
     </script>
 </body>
+
 </html>
