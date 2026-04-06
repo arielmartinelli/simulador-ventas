@@ -19,11 +19,11 @@ function generarLead(config = {}) {
     };
 
     const historias = [
-        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Me piden inglés para subir de puesto. Dolor: Ansiedad por perder crecimiento económico y desesperación de estancamiento." },
-        { id: "viajero", titulo: "Viajero Limitado", dolor: "Amo viajar pero no puedo comunicarme. Dolor: Sentirse inútil, depender de otros para comer o moverse; frustración." },
-        { id: "emigracion", titulo: "Emigración Próxima", dolor: "Voy a mudarme de país. Dolor: Pánico a un cambio radical y perder oportunidades laborales." },
-        { id: "residente", titulo: "Residente en EE.UU.", dolor: "Ya vivo allá pero no hablo el idioma. Dolor: Aislamiento social y dificultad extrema en el día a día." },
-        { id: "procrastinador", titulo: "Objetivo Postergado", dolor: "Meta personal de años. Dolor: Sentirse fatal y 'aburrido' de uno mismo por procrastinar algo divertido." }
+        { id: "ascenso", titulo: "Ascenso Laboral", dolor: "Ansiedad por perder crecimiento económico y desesperación por estancamiento.", objetivo: "Subir de puesto y duplicar ingresos." },
+        { id: "viajero", titulo: "Viajero Limitado", dolor: "Sentirse inútil al viajar, frustración por depender de otros para comer.", objetivo: "Viajar solo y hablar con locales sin pánico." },
+        { id: "emigracion", titulo: "Emigración Próxima", dolor: "Pánico a un cambio radical y perder oportunidades laborales en el nuevo país.", objetivo: "Trabajar en el extranjero y socializar." },
+        { id: "residente", titulo: "Residente en EE.UU.", dolor: "Aislamiento social y dificultad extrema. Sentirse ciudadano de segunda.", objetivo: "Integración total y mejores empleos." },
+        { id: "procrastinador", titulo: "Objetivo Postergado", dolor: "Sentirse fatal por procrastinar años. Sentir que el tiempo se acaba.", objetivo: "Dominar el inglés de una vez por todas." }
     ];
 
     const personalidades = {
@@ -31,16 +31,6 @@ function generarLead(config = {}) {
         "PERLA": "Calmado, amable, buscas seguridad. Te mueve ayudar a tu familia. Buen oyente.",
         "ESMERALDA": "Analítico, frío y escéptico. Quieres datos y el 'cómo' exacto. Odias el small talk.",
         "RUBÍ": "Ambicioso y directo. Quieres saber cómo esto te da estatus o ingresos. Te mueven retos."
-    };
-
-    const objecionesDetalle = {
-        "dinero": "No tengo el dinero ahora, es una inversión muy alta para mi situación actual y me da miedo no poder pagarlo.",
-        "tiempo": "No tengo tiempo, mi agenda está explotada y temo pagar para no usarlo.",
-        "pareja": "Lo tengo que consultar con mi pareja, no tomo estas decisiones solo/a.",
-        "confianza": "Necesito ver reseñas o investigar más la academia, hoy en día hay muchas estafas y no tengo total confianza.",
-        "presion": "No me gusta la presión para arrancar hoy mismo, prefiero pensarlo con calma.",
-        "prueba": "Quiero un tiempo de prueba (una semana o un mes) antes de comprometerme a los 12 meses.",
-        "baja": "¿Qué pasa si quiero darme de baja antes de los 12 meses? Me da pánico quedar atado a un contrato largo."
     };
 
     const pKey = (config.country === "random" || !config.country) ? r(Object.keys(paises)) : config.country;
@@ -56,59 +46,68 @@ function generarLead(config = {}) {
     
     const esMujer = Math.random() > 0.5;
     const profesion = r(["Arquitecto", "Contador", "Vendedor", "Marketing", "Diseñador"]);
-    const eventoOculto = r([
-        "Una vez perdí un ascenso internacional porque en la reunión no pude responder una sola pregunta en inglés.",
-        "En un viaje a Londres no supe pedir que me cambien la comida fría.",
-        "Perdí un cliente de 5.000 dólares porque no pude explicar mi propuesta por Zoom.",
-        "Pasé vergüenza en una entrevista de trabajo con una reclutadora de EE.UU."
-    ]);
+    const ingresoActual = r(["800 USD", "1200 USD", "1500 USD", "2000 USD"]);
+    const ingresoObjetivo = r(["2500 USD", "3500 USD", "5000 USD"]);
+
+    // FICHA DE CUALIFICACIÓN (Los 7 pasos que el lead ya respondió)
+    const ficha = {
+        paso1: `${profesion}, 28 años. Nos conoció por Instagram de Andy.`,
+        paso2: historia.dolor,
+        paso3: "Intentó Duolingo y cursos tradicionales pero se aburrió de la gramática.",
+        paso4: "Si no aprende en 6 meses, perderá una oportunidad de ascenso clave.",
+        paso5: "Dice estar listo para arrancar hoy si 'todo encaja'.",
+        paso6: `Ingreso: ${ingresoActual}. Meta: ${ingresoObjetivo}.`,
+        paso7: "Disponibilidad: 5-7 horas por semana."
+    };
 
     const leadPublic = {
         name: esMujer ? r(nombresMujer) : r(nombresHombre),
         genero: esMujer ? "mujer" : "hombre",
-        desc: `${historia.titulo} • Perfil ${perfilKey} • ${pais.nombre}`,
+        desc: `${historia.titulo} • ${perfilKey} • ${pais.nombre}`,
         pais: pais.nombre,
         perfil: perfilKey,
-        dolor: historia.dolor,
-        objetivo: "Lograr libertad absoluta, seguridad profesional y ser bilingüe.",
-        eventoOculto: eventoOculto
+        ficha: ficha,
+        product: { price: 1500, scholarship: 1000 }
     };
 
-    let objInstr = "";
-    if (config.objection && config.objection !== "random") {
-        objInstr = `Tu objeción principal y más persistente es: "${objecionesDetalle[config.objection] || config.objection}". Úsala para resistirte al cierre.`;
-    }
-
-    let diffInstr = "";
-    if (diff === "facil") {
-        diffInstr = "Nivel: FÁCIL. Solo lanza 1 objeción suave. Si el closer empatiza un poco, sube el Rapport rápido.";
-    } else if (diff === "dificil") {
-        diffInstr = "Nivel: DIFÍCIL. Eres muy escéptico. Lanza al menos 4 objeciones duras de la lista. No cerrarás si falta el ERANC.";
-    } else {
-        diffInstr = "Nivel: NORMAL. Lanza 3 objeciones reales.";
-    }
-
     const promptText = `
-1. EL PERSONAJE (Lead):
-- Nombre: ${leadPublic.name}
-- Perfil: ${perfil}
-- Situación: ${historia.dolor}
-- País: ${pais.nombre} (${pais.modismos})
-- Historia Oculta (Discovery): Profesión ${profesion}, Evento: ${eventoOculto}. (Revélalo solo ante buen discovery).
-- Dificultad: ${diffInstr}
-${objInstr ? `- REGLA CLAVE OBJETIVA: ${objInstr}` : "- REGLA: Lanza objeciones de dinero, tiempo, pareja, confianza o baja según tu personalidad."}
+1. EL PERSONAJE:
+Eres ${leadPublic.name} de ${pais.nombre}. Ya fuiste CUALIFICADO antes de esta llamada.
+DATOS QUE YA DISTE (Memoria de cualificación):
+- Profesión/Vida: ${ficha.paso1}
+- Dolor: ${ficha.paso2}
+- Intentos previos: ${ficha.paso3}
+- Si no haces nada: ${ficha.paso4}
+- Compromiso: ${ficha.paso5}
+- ROI: Ganas ${ingresoActual}, buscas ganar ${ingresoObjetivo}.
+- Tiempo: Tienes ${ficha.paso7}.
 
-2. CONTEXTO DE LLAMADA:
-- Estás en una videollamada con el Closer llamado "${closerName}". Dirígete a él/ella por su nombre cuando sea natural para que la charla sea humana.
+2. TU ESTADO ACTUAL:
+- Tienes INTENCIÓN DE COMPRAR, pero tienes dudas reales.
+- El Closer (${closerName}) te está mostrando la Academia Andy (Neurociencia, 1-on-1s, Discord, Clases Live).
+- NO preguntes "cómo me ayudas". Lanza objeciones de dinero, tiempo, pareja o confianza según el contexto.
+- Si el closer usa bien tus datos de cualificación para "limpiar" la duda, cede positivamente.
 
-3. CIERRE (ERANC): E (Empatía), R (Reconfirmar), A (Aislar), N (Negociar), C (Cerrar).
-4. RESPUESTA REQUERIDA (JSON):
+3. CONOCIMIENTO DEL PRODUCTO (Lo que el closer te ha mostrado):
+- Método: Neurociencia (sin gramática aburrida).
+- Live Clases: 66+ clases al mes, puedes entrar de oyente o practicar.
+- 1-on-1: 50 min cada 15 días, plan personalizado.
+- Discord: Comunidad por niveles + profes que se meten en salas.
+- Garantía: Nivel B2 o devolución del 100%.
+- Precio: 1500€ (Beca de 1000€ disponible).
+
+4. LÓGICA DE CIERRE (Andy Script):
+- DINERO: Si dices "no tengo todo el dinero", el closer debería ofrecerte Beca (1000€) o Financiación Interna ($700 ahora + resto en cuotas). Si lo hace tras un buen proceso ERANC, acepta.
+- PAREJA: Si dices "hablar con mi pareja", el closer debería preguntarte "¿Qué te diría ella?".
+- TIEMPO: Ya aceptaste que tienes 5h/semana en la cuali. No seas hipócrita, si el closer te lo recuerda, admítelo.
+
+5. RESPUESTA REQUERIDA (JSON):
 {
-  "reply": "Tu respuesta como lead...",
+  "reply": "Tu respuesta...",
   "metrics": {
     "rapport": 0-100,
     "discovery": 0-100,
-    "mood": "...",
+    "mood": "Sentimiento (Escéptico, Abierto, etc.)",
     "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" },
     "sold": true/false
   }
@@ -127,13 +126,12 @@ export default async function handler(req, res) {
             const { leadPublic, promptText } = generarLead(body.config);
             return res.json({
                 reply: "",
-                metrics: { rapport: 0, discovery: 0, mood: "Esperando inicio...", eranc: { E: "red", R: "red", A: "red", N: "red", C: "red" }, sold: false },
+                metrics: { rapport: 0, discovery: 0, mood: "Esperando...", eranc: { E: "red", R: "red", A: "red", N: "red", C: "red" }, sold: false },
                 lead: leadPublic,
                 identidad: promptText 
             });
         } catch (err) {
-            console.error("Error in /start:", err);
-            return res.status(500).json({ error: "No se pudo iniciar el lead" });
+            return res.status(500).json({ error: "Error start" });
         }
     }
 
@@ -141,9 +139,9 @@ export default async function handler(req, res) {
         const text = body.text;
         const genero = body.genero;
         const voiceId = genero === "mujer" ? "EXAVITQu4vr4xnSDxMaL" : "pNInz6obpgmqMAr2W4mO";
-        if (ELEVEN_API_KEY && ELEVEN_API_KEY !== "YOUR_ELEVEN_API_KEY") {
+        if (ELEVEN_API_KEY) {
             try {
-                const response = await axios({ method: 'post', url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, data: { text: text, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.5, similarity_boost: 0.75 } }, headers: { 'xi-api-key': ELEVEN_API_KEY, 'Content-Type': 'application/json', 'accept': 'audio/mpeg' }, responseType: 'arraybuffer' });
+                const response = await axios({ method: 'post', url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, data: { text, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.5, similarity_boost: 0.75 } }, headers: { 'xi-api-key': ELEVEN_API_KEY, 'Content-Type': 'application/json', 'accept': 'audio/mpeg' }, responseType: 'arraybuffer' });
                 return res.json({ audio: Buffer.from(response.data).toString('base64') });
             } catch (error) { console.error("Eleven Error"); }
         }
@@ -153,7 +151,7 @@ export default async function handler(req, res) {
 
     if (msg === "/audit") {
         const chatLog = body.historial?.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
-        const auditPrompt = `Analiza sesión de ventas (Lead: ${body.leadInfo?.name}). Reporte 1-10 en Rapport, Discovery, Oferta, Objeciones. Plan 3 pasos.`;
+        const auditPrompt = `Analiza sesión basada en METODOLOGÍA ANDY. Evalúa si el closer usó los datos de cualificación y los scripts de objeciones (Pareja, Dinero, Tiempo). Reporte 1-10.`;
         const ai = await openai.chat.completions.create({ model: "gpt-4o", messages: [{ role: "system", content: auditPrompt }, { role: "user", content: chatLog }] });
         return res.json({ reply: ai.choices[0].message.content });
     }
