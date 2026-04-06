@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Simulator Pro | Command Center</title>
+    <title>Sales Simulator Pro | HUD v3</title>
 
     <!-- SEO & Meta -->
     <meta property="og:title" content="Sales Simulator Pro | IA Training">
@@ -45,83 +45,93 @@
             background-image: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
         }
 
-        /* SIDEBARS */
-        .sidebar-left { grid-row: 1 / 3; border-right: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); backdrop-filter: blur(20px); display: flex; flex-direction: column; padding: 1.5rem; gap: 1.5rem; }
-        .bio-card { background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 1rem; }
-        .bio-card h2 { font-size: 1.25rem; color: var(--accent); }
-        .bio-section { display: flex; flex-direction: column; gap: 0.25rem; }
-        .bio-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
-        .bio-value { font-size: 0.85rem; line-height: 1.4; color: var(--text-primary); }
+        /* --- SIDEBARS --- */
+        .sidebar-left { grid-row: 1 / 3; border-right: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); backdrop-filter: blur(20px); display: flex; flex-direction: column; padding: 1.5rem; gap: 1rem; }
+        .bio-card { background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; flex-direction: column; gap: 0.75rem; }
+        .bio-card h2 { font-size: 1.15rem; color: var(--accent); }
+        .bio-section { display: flex; flex-direction: column; }
+        .bio-label { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
+        .bio-value { font-size: 0.8rem; line-height: 1.4; color: var(--text-primary); }
 
         .transcript-wrap { flex: 1; display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
         .transcript-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; }
-        #transContent { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        #transContent { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding-right: 0.5rem; }
+        #transContent::-webkit-scrollbar { width: 4px; }
+        #transContent::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
 
-        /* MAIN CENTER */
+        /* --- MAIN CENTER --- */
         .main-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; }
-        .hud-video-box { width: 100%; max-width: 700px; aspect-ratio: 16/10; background: var(--bg-card); border-radius: 32px; position: relative; display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 0 50px -10px var(--accent-glow); }
-        .hud-bracket { position: absolute; width: 40px; height: 40px; border: 2px solid var(--accent); opacity: 0.4; }
+        
+        /* Time Pressure HUD */
+        .timer-hud {
+            position: absolute; top: 2rem; width: 300px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; display: none;
+        }
+        #timerBar { height: 100%; width: 100%; background: var(--accent); transition: width 1s linear, background 0.3s; }
+
+        .hud-video-box {
+            width: 100%; max-width: 650px; aspect-ratio: 16/10; background: var(--bg-card); border-radius: 32px;
+            position: relative; display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border); overflow: hidden;
+            box-shadow: 0 0 50px -10px var(--accent-glow);
+        }
+
+        .hud-bracket { position: absolute; width: 40px; height: 40px; border: 2px solid var(--accent); opacity: 0.3; }
         .tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
         .tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
         .bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
         .br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
-        .scan-line { position: absolute; width: 100%; height: 6px; background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.1), transparent); animation: scan 8s linear infinite; z-index: 5; }
+
+        .scan-line { position: absolute; width: 100%; height: 6px; background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent); animation: scan 8s linear infinite; z-index: 5; }
         @keyframes scan { from { top: -10%; } to { top: 110%; } }
 
         .loading-glow { position: absolute; inset: 0; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); opacity: 0; transition: opacity 0.3s; z-index: 1; }
-        .loading-glow.active { opacity: 1; animation: pulsar-glow 1.5s infinite; }
-        @keyframes pulsar-glow { 0%, 100% { transform: scale(0.95); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.6; } }
-        .loading-text { position: absolute; top: 2rem; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent); opacity: 0; z-index: 20; transition: opacity 0.3s; }
-        .loading-text.active { opacity: 1; }
+        .loading-glow.active { opacity: 0.5; animation: pulsar-glow 1.5s infinite; }
+        @keyframes pulsar-glow { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.5; } }
 
-        .avatar-wrap { width: 220px; height: 220px; border-radius: 50%; padding: 6px; background: linear-gradient(135deg, var(--accent), #8b5cf6); position: relative; z-index: 10; transition: all 0.4s ease; }
+        .avatar-wrap { width: 200px; height: 200px; border-radius: 50%; padding: 6px; background: linear-gradient(135deg, var(--accent), #8b5cf6); position: relative; z-index: 10; transition: all 0.4s; }
         .avatar-wrap.talking { animation: talking-pulse 1.5s infinite; }
-        .avatar-wrap.paused { filter: grayscale(1) blur(2px); opacity: 0.5; }
-        @keyframes talking-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); } 50% { transform: scale(1.05); box-shadow: 0 0 40px 10px var(--accent-glow); } 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); } }
-
+        .avatar-wrap.paused { filter: grayscale(1) blur(3px) brightness(0.5); }
+        @keyframes talking-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px var(--accent-glow); } 100% { transform: scale(1); } }
         .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #0f172a; border: 4px solid #020617; overflow: hidden; }
         .avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Controls */
-        .floating-controls { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; gap: 1.5rem; padding: 1rem 2rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 99px; border: 1px solid var(--glass-border); z-index: 100; }
-        .btn { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.2s; }
-        .btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: translateY(-3px); }
+        .floating-controls { position: absolute; bottom: 2rem; display: flex; gap: 1.5rem; padding: 1rem 2rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 99px; border: 1px solid var(--glass-border); z-index: 100; }
+        .btn { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.2s; }
         .btn.active { background: var(--accent); color: white; box-shadow: 0 0 20px var(--accent-glow); }
 
-        /* RIGHT METRICS */
-        .sidebar-right { border-left: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 2rem; }
-        .metric-group { display: flex; flex-direction: column; gap: 1rem; }
-        .metric-title { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
-        .progress-circle-wrap { width: 140px; height: 140px; margin: 0 auto; position: relative; }
+        /* --- ANALYTICS --- */
+        .sidebar-right { border-left: 1px solid var(--glass-border); background: rgba(2, 6, 23, 0.4); padding: 2.5rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; }
+        .metric-group { display: flex; flex-direction: column; gap: 0.75rem; }
+        .metric-title { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
+        .progress-circle-wrap { width: 120px; height: 120px; margin: 0 auto; position: relative; }
         .progress-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .circle-bg { fill: none; stroke: var(--glass-border); stroke-width: 8; }
-        .circle-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 0.8s ease-out; }
-        .progress-value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-        .mood-tag { background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 0.5rem 1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid var(--accent-glow); }
+        .circle-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 377; stroke-dashoffset: 377; transition: stroke-dashoffset 0.8s ease-out; }
+        .progress-value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .mood-tag { background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 0.5rem; border-radius: 99px; font-size: 0.8rem; text-align: center; border: 1px solid var(--accent-glow); }
+        .eranc-meter { display: flex; justify-content: space-between; padding: 0.75rem; background: #020617; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .eranc-dot { width: 30px; height: 30px; border-radius: 6px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #475569; }
+        .eranc-dot.red { color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .eranc-dot.yellow { color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .eranc-dot.green { color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); }
 
-        .eranc-meter { display: flex; justify-content: space-between; padding: 1rem; background: #020617; border-radius: 16px; border: 1px solid var(--glass-border); }
-        .eranc-dot { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #475569; transition: 0.4s; }
-        .eranc-dot.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-        .eranc-dot.yellow { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
-        .eranc-dot.green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); }
-
-        /* SCREENS */
-        .screen { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(32px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 4rem; }
-        .config-box { max-width: 950px; width: 100%; background: var(--bg-card); padding: 3rem; border-radius: 40px; border: 1px solid var(--glass-border); }
+        /* --- SCREENS --- */
+        .screen { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(32px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 4rem; text-align: center; }
+        .config-box { max-width: 900px; width: 100%; background: var(--bg-card); padding: 3rem; border-radius: 40px; border: 1px solid var(--glass-border); }
         #configScreen { display: flex; }
         .config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
-        .config-card { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--glass-border); }
-        .config-card h3 { color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 0.1em; }
-        select { width: 100%; background: #020617; color: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--glass-border); outline: none; }
-        .btn-start { width: 100%; padding: 1.5rem; background: var(--accent); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 1.25rem; cursor: pointer; margin-top: 2rem; transition: all 0.3s; }
-        .btn-start:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .config-card { background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--glass-border); text-align: left; }
+        .config-card h3 { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.75rem; }
+        select, input { width: 100%; background: #020617; color: white; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--glass-border); outline: none; }
+        .btn-start { width: 100%; padding: 1.25rem; background: var(--accent); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 1.15rem; cursor: pointer; margin-top: 2rem; }
 
-        .sale-banner { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
-        .sale-card { background: rgba(16, 185, 129, 0.1); border: 2px solid var(--color-green); padding: 4rem; border-radius: 40px; text-align: center; }
+        /* Banner Fix */
+        .sale-banner { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .sale-card { background: rgba(16, 185, 129, 0.1); border: 2px solid var(--color-green); padding: 4rem; border-radius: 40px; box-shadow: 0 0 50px rgba(16,185,129,0.2); }
 
-        .chat-bubble { padding: 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
-        .bubble-user { background: var(--accent); border-bottom-right-radius: 4px; }
-        .bubble-lead { background: var(--bg-card); border-bottom-left-radius: 4px; }
+        .chat-bubble { padding: 0.8rem; border-radius: 14px; font-size: 0.85rem; line-height: 1.4; margin-bottom: 1rem; }
+        .bubble-user { background: var(--accent); align-self: flex-end; }
+        .bubble-lead { background: var(--bg-card); align-self: flex-start; }
     </style>
 </head>
 <body>
@@ -142,16 +152,18 @@
 
     <!-- CENTER -->
     <main class="main-stage">
+        <div id="timerHud" class="timer-hud"><div id="timerBar"></div></div>
+
         <div class="hud-video-box">
             <div class="hud-bracket tl"></div><div class="hud-bracket tr"></div><div class="hud-bracket bl"></div><div class="hud-bracket br"></div>
             <div id="loadingGlow" class="loading-glow"></div>
-            <div id="loadingText" class="loading-text">Analizando Señal...</div>
             <div class="scan-line"></div>
             <div id="avatarWrap" class="avatar-wrap"><div class="avatar-inner"><img id="avatarImg" src="" alt="Avatar"></div></div>
         </div>
+
         <div class="floating-controls">
             <button onclick="togglePause()" id="pauseBtn" class="btn"><i id="pauseIcon" class="ph-fill ph-pause"></i></button>
-            <button onclick="toggleLive()" id="talkBtn" class="btn active" style="width: 72px; height: 72px; background: var(--accent);"><i id="micIcon" class="ph-fill ph-microphone"></i></button>
+            <button onclick="toggleLive()" id="talkBtn" class="btn active" style="width: 70px; height: 70px; background: var(--accent);"><i id="micIcon" class="ph-fill ph-microphone"></i></button>
             <button onclick="reset()" class="btn"><i class="ph ph-arrow-counter-clockwise"></i></button>
             <button onclick="audit()" class="btn"><i class="ph ph-trend-up"></i></button>
         </div>
@@ -162,14 +174,14 @@
         <div class="metric-group">
             <div class="metric-title">Conexión</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg"><circle class="circle-bg" cx="70" cy="70" r="60"></circle><circle id="rapportBar" class="circle-bar" cx="70" cy="70" r="60"></circle></svg>
+                <svg class="progress-svg"><circle class="circle-bg" cx="60" cy="60" r="50"></circle><circle id="rapportBar" class="circle-bar" cx="60" cy="60" r="50" style="stroke-dasharray: 314; stroke-dashoffset: 314;"></circle></svg>
                 <div id="rapportValue" class="progress-value">0%</div>
             </div>
         </div>
         <div class="metric-group">
             <div class="metric-title">Descubrimiento</div>
             <div class="progress-circle-wrap">
-                <svg class="progress-svg"><circle class="circle-bg" cx="70" cy="70" r="60"></circle><circle id="discoveryBar" class="circle-bar" cx="70" cy="70" r="60" style="stroke: #10b981;"></circle></svg>
+                <svg class="progress-svg"><circle class="circle-bg" cx="60" cy="60" r="50"></circle><circle id="discoveryBar" class="circle-bar" cx="60" cy="60" r="50" style="stroke: #10b981; stroke-dasharray: 314; stroke-dashoffset: 314;"></circle></svg>
                 <div id="discoveryValue" class="progress-value">0%</div>
             </div>
         </div>
@@ -179,86 +191,119 @@
         </div></div>
     </aside>
 
-    <!-- CONFIG -->
-    <div id="configScreen" class="screen">
-        <div class="config-box">
-            <h1 style="text-align: center; margin-bottom: 2rem;">Simulador Pro v2</h1>
-            <div class="config-grid">
-                <div class="config-card"><h3>Gema / Perfil</h3><select id="lType"><option value="random">Aleatoria</option><option value="ZAFIRO">Zafiro</option><option value="PERLA">Perla</option><option value="ESMERALDA">Esmeralda</option><option value="RUBÍ">Rubí</option></select></div>
-                <div class="config-card"><h3>Motivación</h3><select id="lSit"><option value="random">Cualquiera</option><option value="ascenso">Ascenso</option><option value="viajero">Viajero</option><option value="emigracion">Mudanza</option><option value="residente">Residente EE.UU.</option></select></div>
-                <div class="config-card"><h3>Dificultad</h3><select id="lDiff"><option value="normal">Normal</option><option value="facil">Fácil</option><option value="dificil">Difícil / Pro</option></select></div>
-                <div class="config-card"><h3>País</h3><select id="lCountry"><option value="random">Aleatorio (LATAM)</option><option value="mexico">México</option><option value="argentina">Argentina</option><option value="colombia">Colombia</option></select></div>
-                <div class="config-card"><h3>Objeción Forzada</h3><select id="lObj">
-                    <option value="random">Aleatoria</option>
-                    <option value="dinero">Dinero (No tengo/Caro)</option>
-                    <option value="tiempo">Falta de tiempo</option>
-                    <option value="pareja">Consultar con pareja</option>
-                    <option value="confianza">Falta de confianza / Reseñas</option>
-                    <option value="presion">No me gusta la presión</option>
-                    <option value="prueba">Quiero tiempo de prueba</option>
-                    <option value="baja">Baja antes de los 12 meses</option>
-                </select></div>
-            </div>
-            <button class="btn-start" onclick="start()">INICIAR ROLE PLAY</button>
+    <!-- STATUS OVERLAYS -->
+    <div id="saleBanner" class="sale-banner"><div class="sale-card"><h1>VENTA REALIZADA</h1><button onclick="audit()" class="btn-start">Ver Análisis</button></div></div>
+    <div id="timeoutScreen" class="screen">
+        <div class="config-box" style="border-color: var(--color-red); box-shadow: 0 0 50px rgba(239,68,68,0.2);">
+            <i class="ph ph-prohibit" style="font-size: 5rem; color: var(--color-red);"></i>
+            <h1 style="color: var(--color-red); margin: 2rem 0;">LLAMADA CANCELADA</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 3rem;">Has estado en silencio más de 60 segundos. El prospecto colgó la llamada por falta de atención.</p>
+            <button onclick="reset()" class="btn-start" style="background: var(--color-red);">Reintentar Sesión</button>
         </div>
     </div>
 
-    <!-- SALE -->
-    <div id="saleBanner" class="sale-banner">
-        <div class="sale-card"><h1>VENTA REALIZADA</h1><button onclick="audit()" class="btn-start">Ver Análisis del Coach</button></div>
+    <!-- CONFIG SCREEN -->
+    <div id="configScreen" class="screen">
+        <div class="config-box">
+            <h1>Simulador Pro v2</h1>
+            <div class="config-grid">
+                <div class="config-card"><h3>Tu Nombre</h3><input type="text" id="cName" placeholder="Escribe tu nombre..." required></div>
+                <div class="config-card"><h3>Gema / Perfil</h3><select id="lType"><option value="random">Aleatoria</option><option value="ZAFIRO">Zafiro</option><option value="PERLA">Perla</option><option value="ESMERALDA">Esmeralda</option><option value="RUBÍ">Rubí</option></select></div>
+                <div class="config-card"><h3>Dificultad</h3><select id="lDiff"><option value="normal">Normal</option><option value="facil">Fácil</option><option value="dificil">Próxmamente (Hard)</option></select></div>
+                <div class="config-card"><h3>Motivación</h3><select id="lSit"><option value="random">Cualquiera</option><option value="ascenso">Ascenso</option><option value="viajero">Viajero</option><option value="emigracion">Mudanza</option></select></div>
+                <div class="config-card"><h3>País</h3><select id="lCountry"><option value="random">Aleatorio</option><option value="mexico">México</option><option value="argentina">Argentina</option><option value="colombia">Colombia</option></select></div>
+                <div class="config-card"><h3>Objeción</h3><select id="lObj"><option value="random">Aleatoria</option><option value="dinero">Dinero</option><option value="confianza">Confianza</option><option value="baja">Baja / Contrato</option></select></div>
+            </div>
+            <button class="btn-start" onclick="start()">INICIAR VIDEOCALL</button>
+        </div>
     </div>
 
-    <div id="auditScreen" class="screen">
-        <div class="config-box" style="overflow-y: auto; max-height: 80vh;"><div id="auditResult" style="white-space: pre-wrap; font-family: 'JetBrains Mono';"></div><button onclick="reset()" class="btn-start">Cerrar</button></div>
-    </div>
+    <div id="auditScreen" class="screen"><div class="config-box" style="overflow-y: auto; max-height: 80vh;"><div id="auditResult" style="white-space: pre-wrap; font-family: 'JetBrains Mono';"></div><button onclick="reset()" class="btn-start">Cerrar</button></div></div>
 
     <script>
         let clientHistory = [], ident = "", leadData = null, isRec = false, isPaused = false, audio = null;
+        let timeLeft = 60, timerInterval = null;
+
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         let rec = SR ? new SR() : null;
         if (rec) { rec.lang = "es-AR"; rec.continuous = true; rec.onresult = (e) => { if (!isPaused) process(e.results[e.results.length - 1][0].transcript); }; rec.onend = () => { if (isRec && !isPaused) rec.start(); }; }
 
         async function start() {
-            setLoading(true);
-            try {
-                const config = { type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
-                const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
-                const data = await res.json();
-                
-                leadData = data.lead; ident = data.identidad;
-                document.getElementById('leadName').innerText = leadData.name;
-                document.getElementById('bioPain').innerText = leadData.dolor;
-                document.getElementById('bioGoal').innerText = leadData.objetivo;
-                document.getElementById('bioType').innerText = leadData.perfil;
-                document.getElementById('configScreen').style.display = 'none';
-                updateMetrics(data.metrics);
-                
-                const seed = leadData.genero === 'mujer' ? 'Sophia' : 'James';
-                document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
-                
-                toggleLive(); 
-            } catch (err) { alert("Error al iniciar. Revisa tu conexión."); }
-            setLoading(false);
+            const name = document.getElementById('cName').value || "Closer";
+            const config = { closerName: name, type: document.getElementById('lType').value, situation: document.getElementById('lSit').value, difficulty: document.getElementById('lDiff').value, country: document.getElementById('lCountry').value, objection: document.getElementById('lObj').value };
+            
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
+            const data = await res.json();
+            
+            leadData = data.lead; ident = data.identidad;
+            document.getElementById('leadName').innerText = leadData.name;
+            document.getElementById('bioPain').innerText = leadData.dolor;
+            document.getElementById('bioGoal').innerText = leadData.objetivo;
+            document.getElementById('bioType').innerText = leadData.perfil;
+            document.getElementById('configScreen').style.display = 'none';
+
+            updateMetrics(data.metrics);
+            const seed = leadData.genero === 'mujer' ? 'Sophia' : 'James';
+            document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
+            
+            document.getElementById('timerHud').style.display = 'block';
+            resetTimer(); toggleLive();
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 60;
+            updateTimerUI();
+            timerInterval = setInterval(() => {
+                if (!isPaused && !isRec && !document.getElementById('configScreen').offsetParent) { // Only countdown if user isn't talking and lead isn't talking (simpler: if wait time)
+                    // Wait, logic should be: if lead finished talking, start countdown.
+                }
+                // Practical logic: Always countdown unless Paused or Mic is Active (processing).
+                if (!isPaused && !document.getElementById('avatarWrap').classList.contains('talking')) {
+                    timeLeft--;
+                    updateTimerUI();
+                    if (timeLeft <= 0) endGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const bar = document.getElementById('timerBar');
+            const pct = (timeLeft / 60) * 100;
+            bar.style.width = pct + "%";
+            bar.style.background = timeLeft < 20 ? "var(--color-red)" : (timeLeft < 40 ? "var(--color-yellow)" : "var(--accent)");
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            if (rec) rec.stop();
+            if (audio) audio.pause();
+            document.getElementById('timeoutScreen').style.display = 'flex';
         }
 
         async function process(text) {
             if (isPaused) return;
-            addMsg("user", text); setLoading(true);
+            addMsg("user", text);
+            setLoading(true);
+            resetTimer(); // Reset on user input
+            
             const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, historial: clientHistory, identidad: ident }) });
             const data = await res.json();
             setLoading(false);
+
             clientHistory.push({ role: "user", content: text });
             clientHistory.push({ role: "assistant", content: data.reply });
-            addMsg("lead", data.reply); updateMetrics(data.metrics);
+            addMsg("lead", data.reply);
+            updateMetrics(data.metrics);
             if (data.metrics.sold) document.getElementById('saleBanner').style.display = 'flex';
             speak(data.reply);
         }
 
         function updateMetrics(m) {
             if (!m) return;
-            document.getElementById('rapportBar').style.strokeDashoffset = 440 - (440 * m.rapport / 100);
+            document.getElementById('rapportBar').style.strokeDashoffset = 314 - (314 * m.rapport / 100);
             document.getElementById('rapportValue').innerText = m.rapport + "%";
-            document.getElementById('discoveryBar').style.strokeDashoffset = 440 - (440 * m.discovery / 100);
+            document.getElementById('discoveryBar').style.strokeDashoffset = 314 - (314 * m.discovery / 100);
             document.getElementById('discoveryValue').innerText = m.discovery + "%";
             document.getElementById('moodTag').innerText = m.mood;
             document.querySelectorAll('.eranc-dot').forEach(dot => { dot.className = `eranc-dot ${m.eranc?.[dot.dataset.phase] || 'red'}`; });
@@ -270,15 +315,15 @@
             const data = await res.json();
             if (audio) audio.pause();
             audio = new Audio("data:audio/mp3;base64," + data.audio);
-            audio.onended = () => av.classList.remove('talking');
+            audio.onended = () => { av.classList.remove('talking'); resetTimer(); }; // Reset after lead finishes
             if (!isPaused) audio.play();
         }
 
         function toggleLive() { if (!rec) return; const icon = document.getElementById('micIcon'); if (!isRec) { rec.start(); isRec = true; icon.className = "ph-fill ph-circles-three-plus ph-spin"; } else { rec.stop(); isRec = false; icon.className = "ph-fill ph-microphone"; } }
         function togglePause() { isPaused = !isPaused; const icon = document.getElementById('pauseIcon'), av = document.getElementById('avatarWrap'); if (isPaused) { if (audio) audio.pause(); if (rec) rec.stop(); icon.className = "ph-fill ph-play"; av.classList.add('paused'); } else { if (audio && audio.currentTime > 0) audio.play(); if (isRec) rec.start(); icon.className = "ph-fill ph-pause"; av.classList.remove('paused'); } }
-        function setLoading(val) { document.getElementById('loadingGlow').classList.toggle('active', val); document.getElementById('loadingText').classList.toggle('active', val); }
+        function setLoading(val) { document.getElementById('loadingGlow').classList.toggle('active', val); }
         function addMsg(role, text) { const wrap = document.getElementById('transContent'), div = document.createElement('div'); div.className = `chat-bubble bubble-${role}`; div.innerText = text; wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight; }
-        async function audit() { document.getElementById('auditScreen').style.display = 'flex'; document.getElementById('saleBanner').style.display = 'none'; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) }); const data = await res.json(); document.getElementById('auditResult').innerText = data.reply; }
+        async function audit() { document.getElementById('auditScreen').style.display = 'flex'; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) }); const data = await res.json(); document.getElementById('auditResult').innerText = data.reply; }
         function reset() { window.location.reload(); }
     </script>
 </body>

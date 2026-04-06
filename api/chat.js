@@ -48,6 +48,7 @@ function generarLead(config = {}) {
     const perfilKey = (config.type === "random" || !config.type) ? r(Object.keys(personalidades)) : config.type;
     const perfil = personalidades[perfilKey] || personalidades["ZAFIRO"];
     const diff = config.difficulty || "normal";
+    const closerName = config.closerName || "el closer";
     
     const historia = (config.situation === "random" || !config.situation) 
         ? r(historias) 
@@ -97,8 +98,11 @@ function generarLead(config = {}) {
 - Dificultad: ${diffInstr}
 ${objInstr ? `- REGLA CLAVE OBJETIVA: ${objInstr}` : "- REGLA: Lanza objeciones de dinero, tiempo, pareja, confianza o baja según tu personalidad."}
 
-2. CIERRE (ERANC): E (Empatía), R (Reconfirmar), A (Aislar), N (Negociar), C (Cerrar).
-3. RESPUESTA REQUERIDA (JSON):
+2. CONTEXTO DE LLAMADA:
+- Estás en una videollamada con el Closer llamado "${closerName}". Dirígete a él/ella por su nombre cuando sea natural para que la charla sea humana.
+
+3. CIERRE (ERANC): E (Empatía), R (Reconfirmar), A (Aislar), N (Negociar), C (Cerrar).
+4. RESPUESTA REQUERIDA (JSON):
 {
   "reply": "Tu respuesta como lead...",
   "metrics": {
