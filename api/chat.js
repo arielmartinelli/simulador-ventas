@@ -15,7 +15,8 @@ function generarLead(config = {}) {
         "argentina": { nombre: "Argentina", modismos: "laburo, che, viste, un mango, quilombo", economia: "la inflación nos está matando" },
         "colombia": { nombre: "Colombia", modismos: "parce, berraco, camellar, plata", economia: "el dólar está carísimo" },
         "chile": { nombre: "Chile", modismos: "pega, po, cachái, fome", economia: "el costo de vida subió mucho" },
-        "peru": { nombre: "Perú", modismos: "chamba, pucha, manyas, soles", economia: "la situación política afecta el bolsillo" }
+        "peru": { nombre: "Perú", modismos: "chamba, pucha, manyas, soles", economia: "la situación política afecta el bolsillo" },
+        "costa_rica": { nombre: "Costa Rica", modismos: "tuanis, pura vida, brete, mae", economia: "el colon se mantiene estable pero todo sube" }
     };
 
     const historias = [
@@ -31,6 +32,16 @@ function generarLead(config = {}) {
         "PERLA": "Calmado, amable, buscas seguridad. Te mueve ayudar a tu familia. Buen oyente.",
         "ESMERALDA": "Analítico, frío y escéptico. Quieres datos y el 'cómo' exacto. Odias el small talk.",
         "RUBÍ": "Ambicioso y directo. Quieres saber cómo esto te da estatus o ingresos. Te mueven retos."
+    };
+
+    const objecionesDetalle = {
+        "dinero": "No tengo el dinero ahora, es una inversión muy alta para mi situación actual y me da miedo no poder pagarlo.",
+        "tiempo": "No tengo tiempo, mi agenda está explotada y temo pagar para no usarlo.",
+        "pareja": "Lo tengo que consultar con mi pareja, no tomo estas decisiones solo/a.",
+        "confianza": "Necesito ver reseñas o investigar más la academia, hoy en día hay muchas estafas y no tengo total confianza.",
+        "presion": "No me gusta la presión para arrancar hoy mismo, prefiero pensarlo con calma.",
+        "prueba": "Quiero un tiempo de prueba (una semana o un mes) antes de comprometerme a los 12 meses.",
+        "baja": "¿Qué pasa si quiero darme de baja antes de los 12 meses? Me da pánico quedar atado a un contrato largo."
     };
 
     const pKey = (config.country === "random" || !config.country) ? r(Object.keys(paises)) : config.country;
@@ -70,47 +81,39 @@ function generarLead(config = {}) {
         product: { price: 1500, scholarship: 1000 }
     };
 
+    const objInstr = config.objection && config.objection !== "random" ? `Tu objeción principal es: "${objecionesDetalle[config.objection] || config.objection}". Úsala con fuerza.` : "";
+
     const promptText = `
 1. EL PERSONAJE:
-Eres ${leadPublic.name} de ${pais.nombre}. Ya fuiste CUALIFICADO antes de esta llamada.
+Eres ${leadPublic.name} de ${pais.nombre} (${pais.modismos}). Ya fuite CUALIFICADO antes de esta llamada.
 DATOS QUE YA DISTE (Memoria de cualificación):
 - Profesión/Vida: ${ficha.paso1}
 - Dolor: ${ficha.paso2}
 - Intentos previos: ${ficha.paso3}
 - Si no haces nada: ${ficha.paso4}
-- Compromiso: ${ficha.paso5}
 - ROI: Ganas ${ingresoActual}, buscas ganar ${ingresoObjetivo}.
 - Tiempo: Tienes ${ficha.paso7}.
 
 2. TU ESTADO ACTUAL:
 - Tienes INTENCIÓN DE COMPRAR, pero tienes dudas reales.
-- El Closer (${closerName}) te está mostrando la Academia Andy (Neurociencia, 1-on-1s, Discord, Clases Live).
-- NO preguntes "cómo me ayudas". Lanza objeciones de dinero, tiempo, pareja o confianza según el contexto.
+- El Closer (${closerName}) te muestra la Academia Andy (Neurociencia, 1-on-1s, Discord, Live Classes).
+- ${objInstr}
 - Si el closer usa bien tus datos de cualificación para "limpiar" la duda, cede positivamente.
 
-3. CONOCIMIENTO DEL PRODUCTO (Lo que el closer te ha mostrado):
-- Método: Neurociencia (sin gramática aburrida).
-- Live Clases: 66+ clases al mes, puedes entrar de oyente o practicar.
-- 1-on-1: 50 min cada 15 días, plan personalizado.
-- Discord: Comunidad por niveles + profes que se meten en salas.
+3. CONOCIMIENTO DEL PRODUCTO:
+- Método: Neurociencia (sin gramática aburrida). Live Clases (66+ al mes). 1-on-1 (50 min, personalizado). Discord (Salas por niveles).
 - Garantía: Nivel B2 o devolución del 100%.
 - Precio: 1500€ (Beca de 1000€ disponible).
 
 4. LÓGICA DE CIERRE (Andy Script):
-- DINERO: Si dices "no tengo todo el dinero", el closer debería ofrecerte Beca (1000€) o Financiación Interna ($700 ahora + resto en cuotas). Si lo hace tras un buen proceso ERANC, acepta.
-- PAREJA: Si dices "hablar con mi pareja", el closer debería preguntarte "¿Qué te diría ella?".
-- TIEMPO: Ya aceptaste que tienes 5h/semana en la cuali. No seas hipócrita, si el closer te lo recuerda, admítelo.
+- DINERO: Si dices "no tengo todo", el closer debería ofrecer Beca (1000€) o Financiación Interna ($700 + resto).
+- PAREJA: Si dices "hablar con mi pareja", el closer preguntará "¿Qué te diría ella?".
+- TIEMPO: Ya aceptaste que tienes 5h/semana.
 
 5. RESPUESTA REQUERIDA (JSON):
 {
   "reply": "Tu respuesta...",
-  "metrics": {
-    "rapport": 0-100,
-    "discovery": 0-100,
-    "mood": "Sentimiento (Escéptico, Abierto, etc.)",
-    "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" },
-    "sold": true/false
-  }
+  "metrics": { "rapport": 0-100, "discovery": 0-100, "mood": "...", "eranc": { "E": "red|yellow|green", "R": "red|yellow|green", "A": "red|yellow|green", "N": "red|yellow|green", "C": "red|yellow|green" }, "sold": true/false }
 }
 `;
 
@@ -130,14 +133,11 @@ export default async function handler(req, res) {
                 lead: leadPublic,
                 identidad: promptText 
             });
-        } catch (err) {
-            return res.status(500).json({ error: "Error start" });
-        }
+        } catch (err) { return res.status(500).json({ error: "Error start" }); }
     }
 
     if (msg === "/voice") {
-        const text = body.text;
-        const genero = body.genero;
+        const text = body.text, genero = body.genero;
         const voiceId = genero === "mujer" ? "EXAVITQu4vr4xnSDxMaL" : "pNInz6obpgmqMAr2W4mO";
         if (ELEVEN_API_KEY) {
             try {
@@ -151,20 +151,13 @@ export default async function handler(req, res) {
 
     if (msg === "/audit") {
         const chatLog = body.historial?.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
-        const auditPrompt = `Analiza sesión basada en METODOLOGÍA ANDY. Evalúa si el closer usó los datos de cualificación y los scripts de objeciones (Pareja, Dinero, Tiempo). Reporte 1-10.`;
+        const auditPrompt = `Analiza sesión basada en METODOLOGÍA ANDY. Evalúa Rapport, Discovery y scripts de objeciones (Pareja, Dinero, Tiempo). Reporte 1-10.`;
         const ai = await openai.chat.completions.create({ model: "gpt-4o", messages: [{ role: "system", content: auditPrompt }, { role: "user", content: chatLog }] });
         return res.json({ reply: ai.choices[0].message.content });
     }
 
     try {
-        const ai = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [{ role: "system", content: body.identidad }, ...body.historial, { role: "user", content: msg }],
-            response_format: { type: "json_object" }
-        });
-        const data = JSON.parse(ai.choices[0].message.content);
-        return res.json(data);
-    } catch (err) {
-        return res.status(500).json({ error: "OpenAI error" });
-    }
+        const ai = await openai.chat.completions.create({ model: "gpt-4o", messages: [{ role: "system", content: body.identidad }, ...body.historial, { role: "user", content: msg }], response_format: { type: "json_object" } });
+        return res.json(JSON.parse(ai.choices[0].message.content));
+    } catch (err) { return res.status(500).json({ error: "OpenAI error" }); }
 }
