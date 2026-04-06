@@ -1,355 +1,730 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <title>IA Role Play</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Simulator Pro | Closers AI</title>
 
-    <meta property="og:title" content="Closers PRO - Simulador de Ventas con IA">
-    <meta property="og:description"
-        content="Entrená cierres reales con clientes que dudan, objetan y reaccionan como en la vida real.">
-    <meta property="og:image" content="https://i.postimg.cc/6qwyysSQ/f0a92198-9225-46d9-b267-c958ff5b87c7-(1).png">
-    <meta property="og:type" content="website">
-
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/zfm2L0zm/736e2537-f9ed-49b4-a84f-a4ee80260cfb.png">
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
+    <!-- SEO & Meta -->
+    <meta name="description" content="Simulador de ventas de alta fidelidad con IA avanzada y personalidades reales.">
+    <meta property="og:title" content="Sales Simulator Pro">
+    <meta property="og:description" content="Entrena tus cierres con leads realistas de LATAM.">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        body {
+        :root {
+            --bg-main: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.8);
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            font-family: Inter;
-            background: #0f172a;
-            color: white;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, #09090b 80%);
         }
 
+        /* --- Header --- */
         .header {
-            padding: 20px;
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            z-index: 10;
         }
 
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo i {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 0.4rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* --- Main Stage --- */
         .stage {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 2rem;
+            position: relative;
         }
 
-        .video-card {
-            width: 700px;
-            height: 55vh;
-            background: #1e293b;
-            border-radius: 24px;
+        .lead-info-overlay {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            max-width: 300px;
+            z-index: 5;
+        }
+
+        .lead-info-overlay h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .lead-info-overlay p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .video-container {
+            width: 800px;
+            height: 50vh;
+            background: var(--bg-card);
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-
-        .avatar {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
             overflow: hidden;
         }
 
-        .talking .avatar {
-            animation: glow 1s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% {
-                box-shadow: 0 0 10px rgba(59, 130, 246, .3)
-            }
-
-            100% {
-                box-shadow: 0 0 40px rgba(59, 130, 246, .8)
-            }
-        }
-
-        /* BOTONES */
-        .controls {
+        .avatar-wrap {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
             display: flex;
             justify-content: center;
-            gap: 18px;
-            padding: 30px;
+            align-items: center;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .avatar-wrap.talking {
+            animation: pulse-avatar 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-avatar {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px 10px var(--accent-glow); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
+        }
+
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #18181b;
+            overflow: hidden;
+            border: 4px solid #09090b;
+        }
+
+        .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
         }
 
         .btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: white;
-            font-size: 18px;
-            transition: .2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn:hover {
-            transform: scale(1.08);
+            background: #27272a;
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.2);
         }
 
-        .btn-talk {
-            width: 64px;
-            height: 64px;
-            background: #3b82f6;
-            font-size: 22px;
+        .btn-main {
+            width: 72px;
+            height: 72px;
+            background: var(--accent);
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 10px 20px -5px var(--accent-glow);
         }
 
-        /* 🔥 ESTADO ACTIVO */
-        .btn-talk.active {
+        .btn-main:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px -5px var(--accent-glow);
+        }
+
+        .btn-main.active {
             background: #ef4444;
-            animation: pulse 1.4s infinite;
+            box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.5);
+            animation: record-pulse 1.5s infinite;
         }
 
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, .7)
-            }
-
-            70% {
-                box-shadow: 0 0 0 18px rgba(239, 68, 68, 0)
-            }
+        @keyframes record-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* SCREENS */
+        /* --- Screens & Modals --- */
         .screen {
             position: fixed;
             inset: 0;
-            background: #0f172a;
+            background: rgba(9, 9, 11, 0.95);
+            backdrop-filter: blur(16px);
             display: none;
-            padding: 30px;
-            overflow: auto;
-            font-family: "JetBrains Mono";
-            z-index: 999;
+            flex-direction: column;
+            padding: 4rem;
+            z-index: 100;
+            overflow-y: auto;
         }
 
-        .close {
-            margin-top: 20px;
-            padding: 10px;
-            background: #1e293b;
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            max-width: 1000px;
+            width: 100%;
+            margin-inline: auto;
+        }
+
+        .screen-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .close-screen {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .content-wrap {
+            max-width: 1000px;
+            width: 100%;
+            margin-inline: auto;
+        }
+
+        /* --- Config Screen Specific --- */
+        #configScreen {
+            display: flex; /* Active by default */
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .config-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .config-card h3 {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        select, input {
+            background: #09090b;
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-start {
+            margin-top: 3rem;
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--accent);
             border: none;
             color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-radius: 18px;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-start:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* --- Chat Rendering --- */
+        .chat-bubble {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 20px;
+            max-width: 80%;
+            line-height: 1.6;
+            animation: slide-up 0.3s ease-out;
+        }
+
+        .bubble-user {
+            background: var(--accent);
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bubble-lead {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .role-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+            opacity: 0.7;
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Audit Display --- */
+        .audit-report {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .audit-section {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            border-radius: 24px;
+        }
+
+        .audit-section h4 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .audit-section pre {
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
         }
     </style>
 </head>
-
 <body>
 
     <header class="header">
-        <div>🎯 Closers PRO</div>
-        <div id="status">Listo</div>
+        <div class="logo">
+            <i class="ph-fill ph-circles-three-plus"></i>
+            <span>SALES SIMULATOR PRO</span>
+        </div>
+        <div id="status" class="status-badge">
+            <i class="ph-fill ph-circle"></i>
+            <span>Listo</span>
+        </div>
     </header>
 
     <main class="stage">
+        
+        <div class="lead-info-overlay" id="leadDisplay" style="display: none;">
+            <h1 id="leadNameDisplay">--</h1>
+            <p id="leadDescDisplay">--</p>
+        </div>
 
-        <div id="leadName"></div>
-        <div id="leadDesc"></div>
-
-        <div id="avatarWrap" class="video-card">
-            <div class="avatar">
-                <img id="avatarImg">
+        <div class="video-container">
+            <div id="avatarWrap" class="avatar-wrap">
+                <div class="avatar-inner">
+                    <img id="avatarImg" src="" alt="Lead Avatar">
+                </div>
             </div>
         </div>
 
     </main>
 
     <footer class="controls">
-
-        <div class="btn" onclick="reset()">
+        
+        <button class="btn" title="Reiniciar" onclick="reset()">
             <i class="ph ph-arrow-counter-clockwise"></i>
-        </div>
+        </button>
 
-        <div onclick="toggleLive()" id="talkBtn" class="btn btn-talk">
+        <button onclick="toggleLive()" id="talkBtn" class="btn btn-main" title="Hablar (Atajo: Espacio)">
             <i id="micIcon" class="ph-fill ph-microphone"></i>
-        </div>
+        </button>
 
-        <div class="btn" onclick="abrirTrans()">
-            <i class="ph ph-text-align-left"></i>
-        </div>
+        <button class="btn" title="Transcripción" onclick="abrirTrans()">
+            <i class="ph ph-chat-centered-text"></i>
+        </button>
 
-        <div class="btn" onclick="abrirAudit()">
-            <i class="ph ph-chart-line-up"></i>
-        </div>
+        <button class="btn" title="Auditoría / Feedback" onclick="abrirAudit()">
+            <i class="ph ph-trend-up"></i>
+        </button>
 
     </footer>
 
-    <!-- TRANS -->
-    <div id="transScreen" class="screen">
-        <h2>Transcripción</h2>
-        <div id="transContent"></div>
-        <button class="close" onclick="cerrar('transScreen')">Volver</button>
+    <!-- CONFIG SCREEN -->
+    <div id="configScreen" class="screen">
+        <div class="screen-header">
+            <h2 class="screen-title">Configura tu Sesión</h2>
+        </div>
+        <div class="content-wrap">
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Prepara el escenario para tu práctica. Selecciona los parámetros o deja que la IA elija un reto aleatorio.</p>
+            
+            <div class="config-grid">
+                <div class="config-card">
+                    <h3>Perfil de Lead</h3>
+                    <select id="leadType">
+                        <option value="random">Aleatorio (Cualquier perfil)</option>
+                        <option value="ZAFIRO">Zafiro (Dinámico, se distrae)</option>
+                        <option value="PERLA">Perla (Calmado, busca seguridad)</option>
+                        <option value="ESMERALDA">Esmeralda (Analítico, frío)</option>
+                        <option value="RUBÍ">Rubí (Ambicioso, directo)</option>
+                    </select>
+                </div>
+                
+                <div class="config-card">
+                    <h3>Objeción Inicial</h3>
+                    <select id="initialObjection">
+                        <option value="random">Aleatorio</option>
+                        <option value="pareja">Consultar con pareja</option>
+                        <option value="dinero">No tengo dinero / Caro</option>
+                        <option value="pensar">Lo tengo que pensar</option>
+                        <option value="opciones">Viendo otras opciones</option>
+                        <option value="tiempo">Sin tiempo ahora</option>
+                    </select>
+                </div>
+
+                <div class="config-card">
+                    <h3>Contexto LATAM</h3>
+                    <select id="targetCountry">
+                        <option value="random">Aleatorio (México, Argentina, etc)</option>
+                        <option value="mexico">México</option>
+                        <option value="argentina">Argentina</option>
+                        <option value="colombia">Colombia</option>
+                        <option value="chile">Chile</option>
+                        <option value="peru">Perú</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="iniciarSesion()">
+                Comenzar Role Play <i class="ph ph-play" style="margin-left: 10px;"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- AUDIT -->
+    <!-- TRANS SCREEN -->
+    <div id="transScreen" class="screen">
+        <div class="screen-header">
+            <h2 class="screen-title">Transcripción en Vivo</h2>
+            <button class="close-screen" onclick="cerrar('transScreen')"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="content-wrap" id="transContent" style="display: flex; flex-direction: column;"></div>
+    </div>
+
+    <!-- AUDIT SCREEN -->
     <div id="auditScreen" class="screen">
-        <h2>Auditoría</h2>
-        <pre id="auditContent"></pre>
-        <button class="close" onclick="cerrar('auditScreen')">Volver</button>
+        <div class="screen-header">
+            <h2 class="screen-title">Auditoría del Coach</h2>
+            <button class="close-screen" onclick="cerrar('auditScreen')"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="content-wrap" id="auditWrapper">
+            <div id="auditLoading" style="text-align: center; padding: 4rem;">
+                <i class="ph ph-circle-notch ph-spin" style="font-size: 3rem; color: var(--accent);"></i>
+                <p style="margin-top: 1rem;">Analizando tu desempeño...</p>
+            </div>
+            <div id="auditContent" class="audit-report" style="display: none;"></div>
+        </div>
     </div>
 
     <script>
-        let historial = [];
+        let clientHistory = []; // GPT Format: [{role, content}]
+        let clientIdentidad = "";
+        let leadData = null;
         let escuchando = false;
         let hablandoIA = false;
-        let leadGenero = "hombre";
         let audioActual = null;
 
-        avatarImg.src = `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
+        // Initialize Avatar
+        document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.random()}`;
 
-        // LEAD
-        async function generarLead() {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "/start" })
-            });
-            const data = await res.json();
+        // 🎤 SPEECH RECOGNITION
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let rec = null;
+        
+        if (SpeechRecognition) {
+            rec = new SpeechRecognition();
+            rec.lang = "es-AR";
+            rec.continuous = true;
+            rec.interimResults = false;
 
-            leadName.innerText = data.name;
-            leadDesc.innerText = data.desc;
-            leadGenero = data.genero;
+            rec.onend = () => { if (escuchando) rec.start(); };
+            rec.onresult = async (e) => {
+                const text = e.results[e.results.length - 1][0].transcript;
+                procesarMensajeUsuario(text);
+            };
         }
-        generarLead();
 
-        // 🎤 RECONOCIMIENTO
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.lang = "es-AR";
-        rec.continuous = true;
+        async function iniciarSesion() {
+            const config = {
+                type: document.getElementById('leadType').value,
+                objection: document.getElementById('initialObjection').value,
+                country: document.getElementById('targetCountry').value
+            };
 
-        // 🔥 BOTÓN DINÁMICO
-        function actualizarBoton() {
-            if (escuchando) {
-                talkBtn.classList.add("active");
-                micIcon.classList.replace("ph-microphone", "ph-stop");
-            } else {
-                talkBtn.classList.remove("active");
-                micIcon.classList.replace("ph-stop", "ph-microphone");
+            actualizarEstadoUI("Generando Lead...", "loading");
+
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "/start", config })
+                });
+                
+                const data = await res.json();
+                leadData = data;
+                clientIdentidad = data.identidad;
+                
+                // Set UI
+                document.getElementById('leadNameDisplay').innerText = data.name;
+                document.getElementById('leadDescDisplay').innerText = data.desc;
+                document.getElementById('leadDisplay').style.display = 'block';
+                document.getElementById('configScreen').style.display = 'none';
+                
+                // Add first AI message to history
+                clientHistory.push({ role: "assistant", content: data.reply });
+                agregarAlChat("lead", data.reply);
+                
+                actualizarEstadoUI("En llamada", "ready");
+                
+                const seed = data.genero === 'mujer' ? 'Sophia' : 'James';
+                document.getElementById('avatarImg').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}${Math.floor(Math.random()*100)}`;
+
+            } catch (err) {
+                console.error(err);
+                actualizarEstadoUI("Error al iniciar", "error");
             }
         }
 
         function toggleLive() {
-
-            if (!escuchando) {
-                rec.start();
-                escuchando = true;
-                status.innerText = "Escuchando...";
-            } else {
-                rec.stop();
-                audioActual?.pause();
-                escuchando = false;
-                status.innerText = "Pausado";
-            }
-
-            actualizarBoton();
+            if (!rec) return;
+            if (!escuchando) { rec.start(); escuchando = true; } 
+            else { rec.stop(); escuchando = false; }
+            actualizarBotonControles();
         }
 
-        // 🔥 SI SE CORTA SOLO
-        rec.onend = () => {
-            escuchando = false;
-            actualizarBoton();
-        };
+        async function procesarMensajeUsuario(text) {
+            if (hablandoIA) { audioActual?.pause(); pararAnimacionTalking(); }
 
-        rec.onresult = async (e) => {
+            agregarAlChat("user", text);
+            actualizarEstadoUI("Lead escribiendo...", "loading");
 
-            const text = e.results[e.results.length - 1][0].transcript;
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        message: text, 
+                        historial: clientHistory, 
+                        identidad: clientIdentidad 
+                    })
+                });
 
-            if (hablandoIA) {
-                audioActual?.pause();
-                avatarWrap.classList.remove("talking");
-                hablandoIA = false;
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                clientHistory.push({ role: "user", content: text });
+                clientHistory.push({ role: "assistant", content: data.reply });
+
+                agregarAlChat("lead", data.reply);
+                actualizarEstadoUI("En llamada", "ready");
+                reproducirVoz(data.reply);
+
+            } catch (err) {
+                console.error(err);
+                actualizarEstadoUI("Error en chat", "error");
             }
+        }
 
-            historial.push({ role: "user", text });
-
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text })
-            });
-
-            const data = await res.json();
-
-            historial.push({ role: "lead", text: data.reply });
-
-            hablarIA(data.reply, data.emocion);
-        };
-
-        async function hablarIA(texto, emocion) {
-
+        async function reproducirVoz(texto) {
             hablandoIA = true;
-            avatarWrap.classList.add("talking");
+            iniciarAnimacionTalking();
 
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: "/voice",
-                    text: texto,
-                    genero: leadGenero
-                })
-            });
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "/voice",
+                        text: texto,
+                        genero: leadData.genero
+                    })
+                });
 
-            const data = await res.json();
+                const data = await res.json();
+                if (!data.audio) throw new Error("No audio data");
 
-            audioActual = new Audio("data:audio/mp3;base64," + data.audio);
-
-            // velocidad humana
-            if (emocion === "enojo") audioActual.playbackRate = 1.15;
-            else if (emocion === "duda") audioActual.playbackRate = 0.85;
-            else audioActual.playbackRate = 1;
-
-            audioActual.play();
-
-            audioActual.onended = () => {
-                avatarWrap.classList.remove("talking");
+                audioActual = new Audio("data:audio/mp3;base64," + data.audio);
+                audioActual.onended = () => { pararAnimacionTalking(); hablandoIA = false; };
+                audioActual.play();
+            } catch (err) {
+                console.error("Voz falló:", err);
+                pararAnimacionTalking();
                 hablandoIA = false;
-            };
+            }
         }
 
-        async function reset() {
-            historial = [];
-            await generarLead();
+        function actualizarBotonControles() {
+            const btn = document.getElementById('talkBtn');
+            const icon = document.getElementById('micIcon');
+            if (escuchando) {
+                btn.classList.add("active");
+                icon.classList.replace("ph-microphone", "ph-stop");
+            } else {
+                btn.classList.remove("active");
+                icon.classList.replace("ph-stop", "ph-microphone");
+            }
         }
 
-        // TRANS
-        function abrirTrans() {
-            transScreen.style.display = "block";
-            transContent.innerHTML =
-                historial.map(m => `<div>${m.role === "user" ? "TÚ" : "LEAD"}: ${m.text}</div>`).join("");
+        function actualizarEstadoUI(texto, tipo) {
+            const el = document.getElementById('status');
+            let color = "#10b981";
+            if (tipo === "loading") color = "#3b82f6";
+            if (tipo === "error") color = "#ef4444";
+            
+            el.innerHTML = `<i class="ph-fill ph-circle" style="color: ${color}"></i> <span>${texto}</span>`;
         }
 
-        // AUDIT
+        function agregarAlChat(rol, texto) {
+            const content = document.getElementById('transContent');
+            const div = document.createElement('div');
+            div.className = `chat-bubble bubble-${rol}`;
+            div.innerHTML = `<span class="role-tag">${rol === 'user' ? 'Tú (Closer)' : leadData.name}</span>${texto}`;
+            content.appendChild(div);
+            content.scrollTop = content.scrollHeight;
+        }
+
         async function abrirAudit() {
-            const r = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "/audit" })
-            });
-            const d = await r.json();
+            document.getElementById('auditScreen').style.display = 'flex';
+            document.getElementById('auditLoading').style.display = 'block';
+            document.getElementById('auditContent').style.display = 'none';
 
-            auditScreen.style.display = "block";
-            auditContent.innerText = d.reply;
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        message: "/audit", 
+                        historial: clientHistory,
+                        leadInfo: leadData
+                    })
+                });
+                const data = await res.json();
+                const auditContent = document.getElementById('auditContent');
+                auditContent.innerHTML = `<div class="audit-section"><h4>Reporte del Coach</h4><pre>${data.reply}</pre></div>`;
+                document.getElementById('auditLoading').style.display = 'none';
+                auditContent.style.display = 'flex';
+            } catch (err) {
+                document.getElementById('auditLoading').innerText = "Error cargando auditoría.";
+            }
         }
 
-        function cerrar(id) {
-            document.getElementById(id).style.display = "none";
-        }
+        function iniciarAnimacionTalking() { document.getElementById('avatarWrap').classList.add('talking'); }
+        function pararAnimacionTalking() { document.getElementById('avatarWrap').classList.remove('talking'); }
+        function abrirTrans() { document.getElementById('transScreen').style.display = 'flex'; }
+        function reset() { if (confirm("¿Reiniciar sesión?")) window.location.reload(); }
+        function cerrar(id) { document.getElementById(id).style.display = 'none'; }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && document.activeElement.tagName !== 'SELECT') {
+                e.preventDefault(); toggleLive();
+            }
+        });
     </script>
-
 </body>
-
 </html>

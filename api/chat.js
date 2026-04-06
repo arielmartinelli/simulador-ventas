@@ -4,10 +4,6 @@ import axios from "axios";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const ELEVEN_API_KEY = process.env.ELEVEN_API_KEY;
 
-let historial = [];
-let identidad = "";
-let leadPublic = {};
-
 const r = a => a[Math.floor(Math.random() * a.length)];
 
 function generarLead(config = {}) {
@@ -37,7 +33,7 @@ function generarLead(config = {}) {
         "RUBÍ": "Ambicioso y directo. El tiempo es dinero. Quieres saber cómo esto te da estatus o ingresos. Te mueven retos."
     };
 
-    const objeciones = [
+    const objecionesArr = [
         "Lo tengo que hablar con mi pareja.",
         "Tengo que hacer números / No me dan las cuentas.",
         "Lo tengo que pensar.",
@@ -46,17 +42,15 @@ function generarLead(config = {}) {
         "No sé si tengo el tiempo para comprometerme ahora."
     ];
 
-    // Configuración o Azar
-    const pKey = config.country === "random" ? r(Object.keys(paises)) : config.country;
+    const pKey = config.country === "random" || !config.country ? r(Object.keys(paises)) : config.country;
     const pais = paises[pKey] || paises["mexico"];
     
-    const perfilKey = config.type === "random" ? r(Object.keys(personalidades)) : config.type;
+    const perfilKey = config.type === "random" || !config.type ? r(Object.keys(personalidades)) : config.type;
     const perfil = personalidades[perfilKey] || personalidades["ZAFIRO"];
     
     const historia = r(historias);
     const esMujer = Math.random() > 0.5;
 
-    // Historia Oculta
     const eventoOculto = r([
         "Perdí un ascenso por no entender una reunión en inglés.",
         "Me sentí humillado en un viaje porque no pude pedir comida solo.",
@@ -64,7 +58,7 @@ function generarLead(config = {}) {
         "Pasé vergüenza en una entrevista de trabajo que era mi sueño."
     ]);
 
-    leadPublic = {
+    const leadPublic = {
         name: esMujer ? r(nombresMujer) : r(nombresHombre),
         genero: esMujer ? "mujer" : "hombre",
         desc: `${historia.titulo} • Perfil ${perfilKey} • ${pais.nombre}`,
@@ -73,7 +67,7 @@ function generarLead(config = {}) {
         dolor: historia.dolor
     };
 
-    identidad = `
+    const promptText = `
 Eres un LEAD (Prospecto) de alta calidad en una videollamada de ventas.
 Tu objetivo es interactuar con el "Closer" (el usuario).
 
@@ -101,7 +95,7 @@ CONOCIMIENTO DEL PRODUCTO (Academia):
 
 REGLAS DE COMPORTAMIENTO:
 1. Interacción: Alterna entre "Charlatán" (irte por las ramas) o "Seco" según tu personalidad ${perfilKey}.
-2. Resistencia: Lanza al menos 3 objeciones reales de esta lista: ${objeciones.join(", ")}. No cedas fácil.
+2. Resistencia: Lanza al menos 3 objeciones reales de esta lista: ${objecionesArr.join(", ")}. No cedas fácil.
 3. El cierre [E-R-A-N-C]: Solo sacarás la tarjeta si el closer cumple:
    - E: Empatizar (valida tu crisis o situación).
    - R: Reconfirmar Interés (usa tu Dolor o Deseo oculto).
@@ -109,57 +103,83 @@ REGLAS DE COMPORTAMIENTO:
    - N: Negociar/Resolver (solución real, cuotas, garantía).
    - C: Cerrar (Doble alternativa o pregunta directa).
 
-IMPORTANTE: Eres un humano real. No eres un bot amable. Tienes miedos y dudas económicas.
+IMPORTANTE: Eres un humano real. No eres un bot amable. No ayudes al closer.
     `;
+
+    return { leadPublic, promptText };
 }
 
 export default async function handler(req, res) {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    // Vercel auto-parses body if content-type is application/json
+    const body = req.body;
     const msg = body.message;
 
+    console.log("Incoming Message:", msg);
+
     if (msg === "/start") {
-        historial = [];
-        generarLead(body.config);
+        const { leadPublic, promptText } = generarLead(body.config);
         return res.json({
             reply: "¡Hola! Gracias por atenderme. ¿Cómo estás?",
             name: leadPublic.name,
             desc: leadPublic.desc,
-            genero: leadPublic.genero
+            genero: leadPublic.genero,
+            identidad: promptText // Pass this back to client to store
         });
     }
 
     if (msg === "/voice") {
-        const voiceId = body.genero === "mujer" ? "EXAVITQu4vr4xnSDxMaL" : "pNInz6obpgmqMAr2W4mO";
-        try {
-            const response = await axios({
-                method: 'post',
-                url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-                data: {
-                    text: body.text,
-                    model_id: "eleven_multilingual_v2",
-                    voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-                },
-                headers: {
-                    'xi-api-key': ELEVEN_API_KEY,
-                    'Content-Type': 'application/json',
-                    'accept': 'audio/mpeg'
-                },
-                responseType: 'arraybuffer'
-            });
+        const text = body.text;
+        const genero = body.genero;
+        const voiceId = genero === "mujer" ? "EXAVITQu4vr4xnSDxMaL" : "pNInz6obpgmqMAr2W4mO";
+        
+        // 1. Try ElevenLabs
+        if (ELEVEN_API_KEY && ELEVEN_API_KEY !== "YOUR_ELEVEN_API_KEY") {
+            try {
+                const response = await axios({
+                    method: 'post',
+                    url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+                    data: {
+                        text: text,
+                        model_id: "eleven_multilingual_v2",
+                        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+                    },
+                    headers: {
+                        'xi-api-key': ELEVEN_API_KEY,
+                        'Content-Type': 'application/json',
+                        'accept': 'audio/mpeg'
+                    },
+                    responseType: 'arraybuffer'
+                });
+                const base64Audio = Buffer.from(response.data).toString('base64');
+                return res.json({ audio: base64Audio });
+            } catch (error) {
+                console.error("ElevenLabs Error (Falling back to OpenAI):", error.response?.data || error.message);
+                // Continue to fallback
+            }
+        }
 
-            const base64Audio = Buffer.from(response.data).toString('base64');
-            return res.json({ audio: base64Audio });
+        // 2. Fallback to OpenAI TTS
+        try {
+            const mp3 = await openai.audio.speech.create({
+                model: "tts-1",
+                voice: genero === "mujer" ? "nova" : "alloy",
+                input: text,
+            });
+            const buffer = Buffer.from(await mp3.arrayBuffer());
+            return res.json({ audio: buffer.toString('base64') });
         } catch (error) {
-            console.error("ElevenLabs Error:", error.response?.data || error.message);
-            return res.status(500).json({ error: "Voice error" });
+            console.error("OpenAI TTS Error:", error.message);
+            return res.status(500).json({ error: "No voice source available" });
         }
     }
 
     if (msg === "/audit") {
-        const chatLog = historial.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
+        const chatLog = body.historial?.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n");
+        const leadInfo = body.leadInfo || {};
+        
         const auditPrompt = `
 Eres un Coach de Ventas experto. Analiza la siguiente sesión de role play.
-EL LEAD ERA: ${leadPublic.name} del país ${leadPublic.pais} con perfil ${leadPublic.perfil}.
+EL LEAD ERA: ${leadInfo.name} del país ${leadInfo.pais} con perfil ${leadInfo.perfil}.
 
 CHAT LOG:
 ${chatLog}
@@ -178,8 +198,8 @@ EVALUACIÓN TÉCNICA (1-10):
 NOTA MEDIA FINAL: {X.X}
 
 ANÁLISIS DEL COACH:
-- Identificación de Perfil: ¿Supo que era un ${leadPublic.perfil}?
-- Manejo de Contexto: ¿Cómo integró que el lead es de ${leadPublic.pais}?
+- Identificación de Perfil: ¿Supo que era un ${leadInfo.perfil}?
+- Manejo de Contexto: ¿Cómo integró que el lead es de ${leadInfo.pais}?
 - Cita Directa: "Dijiste [X] cuando debiste decir [Y]".
 
 PLAN DE MEJORA:
@@ -188,35 +208,36 @@ PLAN DE MEJORA:
 3. [Paso 3]
         `;
 
-        const ai = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [{ role: "system", content: auditPrompt }]
-        });
-
-        return res.json({ reply: ai.choices[0].message.content });
+        try {
+            const ai = await openai.chat.completions.create({
+                model: "gpt-4o-mini", // Safer and faster
+                messages: [{ role: "system", content: auditPrompt }]
+            });
+            return res.json({ reply: ai.choices[0].message.content });
+        } catch (err) {
+            console.error("Audit error:", err.message);
+            return res.status(500).json({ error: "Audit failed" });
+        }
     }
 
     // CHAT PRINCIPAL
-    historial.push({ role: "user", content: msg });
-    
-    // Keep context window
-    if (historial.length > 20) historial = historial.slice(-20);
+    const clientHistory = body.historial || [];
+    const clientIdentidad = body.identidad || "";
 
     try {
         const ai = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4o-mini", // Safer default
             messages: [
-                { role: "system", content: identidad },
-                ...historial
+                { role: "system", content: clientIdentidad },
+                ...clientHistory,
+                { role: "user", content: msg }
             ]
         });
 
         const reply = ai.choices[0].message.content;
-        historial.push({ role: "assistant", content: reply });
-        
         return res.json({ reply });
     } catch (err) {
-        console.error("OpenAI Error:", err);
-        return res.status(500).json({ error: "Chat error" });
+        console.error("OpenAI Chat Error:", err.message);
+        return res.status(500).json({ error: "OpenAI connection error" });
     }
 }
