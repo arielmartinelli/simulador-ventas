@@ -124,6 +124,10 @@ No marcas 'sold: true' hasta que se cumplan ESTAS DOS CONDICIONES:
 }
 
 export default async function handler(req, res) {
+    if (!req.body || !req.body.message) {
+        return res.status(400).json({ error: "Petición mal formada o sin mensaje" });
+    }
+    
     const body = req.body;
     const msg = body.message;
 

@@ -2,6 +2,10 @@ const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_KEY;
 
 export default async function handler(req, res) {
+    if (!SB_URL || !SB_KEY) {
+        return res.status(500).json({ error: "Missing Supabase Credentials (SUPABASE_URL or SUPABASE_KEY)" });
+    }
+
     if (req.method === "GET") {
         const r = await fetch(`${SB_URL}/rest/v1/closers?select=*&order=name.asc`, {
             headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
