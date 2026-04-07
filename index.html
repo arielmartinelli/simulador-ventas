@@ -285,7 +285,8 @@
             background: linear-gradient(135deg, var(--accent), #8b5cf6);
             position: relative;
             z-index: 10;
-            transition: all 0.4s;
+            transition: box-shadow 0.4s, filter 0.4s;
+            transform-style: preserve-3d;
         }
 
         .avatar-wrap.talking {
@@ -318,6 +319,8 @@
             background: #0f172a;
             border: 4px solid #020617;
             overflow: hidden;
+            transform: translateZ(40px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .avatar-inner img {
@@ -786,7 +789,7 @@
             <div class="hud-bracket br"></div>
             <div id="loadingGlow" class="loading-glow"></div>
             <div class="scan-line"></div>
-            <div id="avatarWrap" class="avatar-wrap">
+            <div id="avatarWrap" class="avatar-wrap" data-tilt data-tilt-glare data-tilt-max-glare="0.5" data-tilt-max="25" data-tilt-speed="400" data-tilt-scale="1.05">
                 <div class="avatar-inner"><img id="avatarImg" src="" alt="Lead Avatar"></div>
             </div>
         </div>
@@ -1209,6 +1212,7 @@
 
         function reset() { window.location.reload(); }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 </body>
 
 </html>
