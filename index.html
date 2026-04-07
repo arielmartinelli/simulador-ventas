@@ -969,9 +969,12 @@
             <h3>Código de Acceso</h3>
             <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Ingresa el PIN de 4 dígitos para ver el historial.</p>
             <input type="password" id="pinInput" placeholder="****" maxlength="4" style="text-align: center; font-size: 2rem; letter-spacing: 0.5em; margin-bottom: 2rem;">
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn-ghost" onclick="toggleModal('pinModal')" style="flex: 1;">Cancelar</button>
-                <button class="btn-start" onclick="verifyPin()" style="flex: 1; margin: 0;">Entrar</button>
+            <div style="display: flex; gap: 1rem; flex-direction: column;">
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-ghost" onclick="toggleModal('pinModal')" style="flex: 1; height: 50px; margin: 0;">Cancelar</button>
+                    <button class="btn-start" onclick="verifyPin(false)" style="flex: 1; margin: 0; height: 50px; font-size: 1rem;">Mi Historial</button>
+                </div>
+                <button class="btn-start" onclick="verifyPin(true)" style="width: 100%; margin: 0; height: 50px; font-size: 1rem; background: #8b5cf6;">Historial de Todos</button>
             </div>
         </div>
     </div>
@@ -1147,10 +1150,11 @@
             toggleModal('pinModal');
         }
 
-        async function verifyPin() {
+        async function verifyPin(isAll = false) {
             const pin = document.getElementById('pinInput').value;
-            const cid = document.getElementById('closerSelect').value;
-            if (!cid) return alert("Selecciona un closer");
+            let cid = document.getElementById('closerSelect').value;
+            if (!isAll && !cid) return alert("Selecciona un closer");
+            if (isAll) cid = "all";
             
             const res = await fetch("/api/history", {
                 method: "POST",
@@ -1163,24 +1167,26 @@
             const data = await res.json();
             toggleModal('pinModal');
             toggleModal('historyModal');
-            renderHistory(data);
+            renderHistory(data, isAll);
         }
 
-        function renderHistory(data) {
+        function renderHistory(data, isAll = false) {
             const list = document.getElementById('historyList');
-            if (data.length === 0) list.innerHTML = "<p>No hay llamadas guardadas para este closer.</p>";
+            if (data.length === 0) list.innerHTML = "<p>No hay llamadas guardadas.</p>";
             else {
-                list.innerHTML = data.map(s => `
+                list.innerHTML = data.map(s => {
+                    const closerNameTag = (isAll && s.closers) ? `<span style="color: var(--accent);">Closer: ${s.closers.name}</span> | ` : "";
+                    return `
                     <div class="history-item" onclick="viewSimulation('${s.id}')">
                         <div class="history-header">
                             <strong>Lead: ${s.lead_data.name}</strong>
-                            <span class="history-date">${new Date(s.created_at).toLocaleString()}</span>
+                            <span class="history-date">${closerNameTag}${new Date(s.created_at).toLocaleString()}</span>
                         </div>
                         <div class="history-outcome" style="color: ${s.metrics.sold ? 'var(--color-green)' : 'var(--text-secondary)'}">
                             ${s.metrics.sold ? 'VENTA EXITOSA' : 'SIN CIERRE'}
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             window.allSims = data;
         }

@@ -14,7 +14,12 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: "PIN Incorrecto" });
         }
 
-        const r = await fetch(`${SB_URL}/rest/v1/simulations?closer_id=eq.${closer_id}&select=*&order=created_at.desc`, {
+        let queryUrl = `${SB_URL}/rest/v1/simulations?select=*,closers(name)&order=created_at.desc`;
+        if (closer_id !== "all") {
+            queryUrl = `${SB_URL}/rest/v1/simulations?closer_id=eq.${closer_id}&select=*,closers(name)&order=created_at.desc`;
+        }
+
+        const r = await fetch(queryUrl, {
             headers: { 
                 "apikey": SB_KEY, 
                 "Authorization": `Bearer ${SB_KEY}`
