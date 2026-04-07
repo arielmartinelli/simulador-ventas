@@ -892,7 +892,9 @@
                         <select id="closerSelect">
                             <option value="">Cargando...</option>
                         </select>
-                        <button onclick="addCloser()" class="btn" style="width: 45px; height: 45px; border-radius: 12px; flex-shrink: 0;"><i class="ph ph-plus"></i></button>
+                        <button onclick="addCloser()" class="btn"
+                            style="width: 45px; height: 45px; border-radius: 12px; flex-shrink: 0;"><i
+                                class="ph ph-plus"></i></button>
                     </div>
                 </div>
                 <div class="config-card">
@@ -946,7 +948,8 @@
                 </div>
             </div>
             <button class="btn-start" onclick="start()">ENTRAR A LA LLAMADA</button>
-            <button class="btn-ghost" onclick="openHistory()" style="width: 100%; margin-top: 1rem; height: 50px; font-size: 0.9rem;">
+            <button class="btn-ghost" onclick="openHistory()"
+                style="width: 100%; margin-top: 1rem; height: 50px; font-size: 0.9rem;">
                 <i class="ph ph-clock-counter-clockwise"></i> Ver Historial de Llamadas
             </button>
         </div>
@@ -967,14 +970,20 @@
     <div id="pinModal" class="modal">
         <div class="config-box" style="max-width: 400px;">
             <h3>Código de Acceso</h3>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Ingresa el PIN de 4 dígitos para ver el historial.</p>
-            <input type="password" id="pinInput" placeholder="****" maxlength="4" style="text-align: center; font-size: 2rem; letter-spacing: 0.5em; margin-bottom: 2rem;">
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Ingresa el PIN de 4
+                dígitos para ver el historial.</p>
+            <input type="password" id="pinInput" placeholder="****" maxlength="4"
+                style="text-align: center; font-size: 2rem; letter-spacing: 0.5em; margin-bottom: 2rem;">
             <div style="display: flex; gap: 1rem; flex-direction: column;">
                 <div style="display: flex; gap: 1rem;">
-                    <button class="btn-ghost" onclick="toggleModal('pinModal')" style="flex: 1; height: 50px; margin: 0;">Cancelar</button>
-                    <button class="btn-start" onclick="verifyPin(false)" style="flex: 1; margin: 0; height: 50px; font-size: 1rem;">Mi Historial</button>
+                    <button class="btn-ghost" onclick="toggleModal('pinModal')"
+                        style="flex: 1; height: 50px; margin: 0;">Cancelar</button>
+                    <button class="btn-start" onclick="verifyPin(false)"
+                        style="flex: 1; margin: 0; height: 50px; font-size: 1rem;">Historial Closser</button>
                 </div>
-                <button class="btn-start" onclick="verifyPin(true)" style="width: 100%; margin: 0; height: 50px; font-size: 1rem; background: #8b5cf6;">Historial de Todos</button>
+                <button class="btn-start" onclick="verifyPin(true)"
+                    style="width: 100%; margin: 0; height: 50px; font-size: 1rem; background: #8b5cf6;">Historial de
+                    Todos</button>
             </div>
         </div>
     </div>
@@ -1036,7 +1045,7 @@
         async function start() {
             const sel = document.getElementById('closerSelect');
             if (!sel.value) return alert("Selecciona o añade un closer primero");
-            
+
             currentCloserId = sel.value;
             const closerName = sel.options[sel.selectedIndex].text;
 
@@ -1044,7 +1053,7 @@
 
             const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/start", config }) });
             const data = await res.json();
-            
+
             leadData = data.lead; ident = data.identidad;
             document.getElementById('leadName').innerText = leadData.name;
             document.getElementById('leadPais').innerText = leadData.pais;
@@ -1138,12 +1147,12 @@
             });
         }
 
-        async function audit() { 
-            document.getElementById('auditScreen').style.display = 'flex'; 
-            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) }); 
-            const data = await res.json(); 
-            document.getElementById('auditResult').innerText = data.reply; 
-            autoSave(data.reply); 
+        async function audit() {
+            document.getElementById('auditScreen').style.display = 'flex';
+            const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/audit", historial: clientHistory, leadInfo: leadData }) });
+            const data = await res.json();
+            document.getElementById('auditResult').innerText = data.reply;
+            autoSave(data.reply);
         }
 
         function openHistory() {
@@ -1155,15 +1164,15 @@
             let cid = document.getElementById('closerSelect').value;
             if (!isAll && !cid) return alert("Selecciona un closer");
             if (isAll) cid = "all";
-            
+
             const res = await fetch("/api/history", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ closer_id: cid, pin })
             });
-            
+
             if (!res.ok) return alert("PIN Incorrecto");
-            
+
             const data = await res.json();
             toggleModal('pinModal');
             toggleModal('historyModal');
