@@ -1075,9 +1075,9 @@
             document.getElementById('configScreen').style.display = 'none';
             updateMetrics(data.metrics);
 
-            const genderFolder = leadData.genero === 'mujer' ? 'women' : 'men';
-            const randomId = Math.floor(Math.random() * 90);
-            document.getElementById('avatarImg').src = `https://randomuser.me/api/portraits/${genderFolder}/${randomId}.jpg`;
+            const genderPrompt = leadData.genero === 'mujer' ? '3d%20pixar%20style%20beautiful%20businesswoman%20blazer%20professional%20avatar%20portrait' : '3d%20pixar%20style%20handsome%20businessman%20suit%20professional%20avatar%20portrait';
+            const randomSeed = Math.floor(Math.random() * 99999);
+            document.getElementById('avatarImg').src = `https://image.pollinations.ai/prompt/${genderPrompt}?width=512&height=512&nologo=true&seed=${randomSeed}`;
 
             document.getElementById('timerHud').style.display = 'block';
             resetTimer();
